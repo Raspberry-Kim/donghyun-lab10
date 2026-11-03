@@ -155,6 +155,7 @@ for k,v in PEOPLE.items():
 
 # ---------- 포동이 16×16 (뒤따르기) ----------
 # 앞·뒤: 동현크의 둥근 머리를 따르고, 원본 포동이처럼 귀가 머리 양옆으로 늘어진다(말티즈). 눈 2×2에 흰 점, 코 2×2.
+# 앞·뒤: 양옆에 늘어진 귀는 4~10행(7칸)
 pet_down=[
 ".....KKKKKK.....",
 "...KKWWWWWWKK...",
@@ -165,13 +166,14 @@ pet_down=[
 "KWWKWWWKKWWWKWWK",
 "KWWKWWWKKWWWKWWK",
 "KWWKKWWWWWWKKWWK",
-".KKKRRRRRRRRKKK.",
-"..KWWWWWWWWWWK..",
+"KWWKRRRRRRRRKWWK",
+".KKKWWWWWWWWKKK.",
 "..KWWWWWWWWWWK..",
 "..KWWKWWWWKWWK..",
 "..KGGK.GG.KGGK..",
 "..KKKK....KKKK..",
-"................"]
+"................"
+]
 pet_up=[
 ".....KKKKKK.....",
 "...KKWWWWWWKK...",
@@ -182,13 +184,14 @@ pet_up=[
 "KWWKWWWWWWWWKWWK",
 "KWWKWWWWWWWWKWWK",
 "KWWKKWWWWWWKKWWK",
+"KWWKWWWWWWWWKWWK",
 ".KKKWWWWWWWWKKK.",
-"..KWWWWWWWWWWKK.",
 "..KWWWWWWWWWWWWK",
 "..KWWKWWWWKWWKK.",
 "..KGGK.GG.KGGK..",
 "..KKKK....KKKK..",
-"................"]
+"................"
+]
 # 옆: 앞모습을 그대로 돌린 꼴. 큰 머리, 뒤통수 쪽에 늘어진 귀덮개(3~8행, 처음 길이의 80%), 앞쪽 코, 목줄, 뒤로 작은 몸과 꼬리.
 pet_left=[
 "...KKKKKK.......",
@@ -237,13 +240,14 @@ pet_down2=[
 "KWWKWWWKKWWWKWWK",
 "KWWKWWWKKWWWKWWK",
 "KWWKKWWWWWWKKWWK",
-".KKKRRRRRRRRKKK.",
-"..KWWWWWWWWWWK..",
+"KWWKRRRRRRRRKWWK",
+".KKKWWWWWWWWKKK.",
 "..KWWWWWWWWWWK..",
 "..KWWKWWWWKWWK..",
 "..KGGKGG..KGGK..",
 "..KKKK....KKKK..",
-"................"]
+"................"
+]
 pet_up2=[
 ".....KKKKKK.....",
 "...KKWWWWWWKK...",
@@ -254,13 +258,14 @@ pet_up2=[
 "KWWKWWWWWWWWKWWK",
 "KWWKWWWWWWWWKWWK",
 "KWWKKWWWWWWKKWWK",
+"KWWKWWWWWWWWKWWK",
 ".KKKWWWWWWWWKKK.",
-"..KWWWWWWWWWWKK.",
 "..KWWWWWWWWWWWWK",
 "..KWWKWWWWKWWKK.",
 "..KGGK..GGKGGK..",
 "..KKKK....KKKK..",
-"................"]
+"................"
+]
 add('pet_down2',pet_down2); add('pet_up2',pet_up2)
 
 # ---------- 동현몬 24×24 ----------
