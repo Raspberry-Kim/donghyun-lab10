@@ -264,6 +264,8 @@ document.addEventListener('keydown',e=>{
   const k=keyOf(e); if(!k) return; e.preventDefault(); if(e.repeat) return; keyDown(k);
 });
 document.addEventListener('keyup',e=>{ const k=keyOf(e); if(!k) return; keyUp(k); });
+GP.start({hint:'A 확인 · B 취소 · X 동현몬 · Y 상태 · + 메뉴',status:t=>status(t),
+  down(k){ if(!S||tab!=='play') return; keyDown(k); }, up(k){ if(!S) return; keyUp(k); }});
 function keyDown(k){
   if(!S) return;
   if(mode==='over'){ if(S.dialog){ keys.aPressed=true; return; } if(k==='x'||k==='enter'||k==='z') backToSetup(); return; }

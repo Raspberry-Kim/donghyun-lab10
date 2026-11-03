@@ -1,4 +1,4 @@
-# 동현몬 v0.01
+# 동현몬 v0.02
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23914029.svg)](https://doi.org/10.5281/zenodo.23914029)
 
@@ -27,13 +27,15 @@
 
 방향키 걷기·고르기 · X 말걸기·줍기·확인 · Z 취소·대화 넘기기 · S 동현몬 목록(순서·상처약) · A 지금 상태 한 줄 · Enter 메뉴(동현몬·가방·도감·저장·불러오기·포기) · M 효과음. 동현전·동현워·동현크와 같은 키 배치다. 좁은 화면과 터치 기기에서는 화면 버튼이 나온다.
 
+게임패드(닌텐도 배치): A 말걸기·확인 · B 취소 · X 동현몬 · Y 상태 · + 메뉴 · 십자·왼 스틱 걷기. 블루투스·USB 게임패드를 OS에서 짝지어 두면 브라우저가 바로 읽는다(Gamepad API, Safari·Chrome·Firefox·아이폰 Safari). 단추를 한 번 누르면 "게임패드 연결됨"이 상태 줄에 뜬다. A·B가 뒤집혀 눌리는 패드는 −(Select)를 한 번 눌러 맞바꾼다(브라우저에 기억).
+
 ## 저장
 
 Enter 메뉴에서 브라우저 칸 3개(`donghyunmon:slot1..3`) 또는 `.dhsave` 파일로 저장하고, 출전 준비 화면이나 메뉴에서 불러온다. 지도 위에서만 저장할 수 있다. 동현전·동현워·동현크와 같은 방식이다.
 
 ## 파일
 
-- `src/` 원본(donghyun.js 실행기 · sprites.js 도트 · data.js 자료 · engine.js 규칙 · render.js 화면 · examples.js 예제 · sfx.js 효과음 · app.js 화면 연결)
+- `src/` 원본(donghyun.js 실행기 · sprites.js 도트 · data.js 자료 · engine.js 규칙 · render.js 화면 · examples.js 예제 · sfx.js 효과음 · gamepad.js 게임패드 · app.js 화면 연결)
 - `tools/paint.py` 도트 그림 생성기 → `src/sprites.js`
 - `node build.cjs` → `dist/index.html`(단일 파일)과 루트 `index.html`
 - `qa/smoke.cjs` Playwright 점검(예제 13개 · 연구소 선물 · 야생 포획 · 체육관 배지 · 회복소 · 저장/불러오기)
