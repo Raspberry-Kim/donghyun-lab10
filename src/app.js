@@ -102,7 +102,9 @@ function sortie(){
 let S=null, previewS=null, mode='setup', paused=false, menu=null, lastMap=null;
 const keys={up:false,down:false,left:false,right:false,upPressed:false,downPressed:false,leftPressed:false,rightPressed:false,aPressed:false,bPressed:false};
 function clearPressed(){ keys.upPressed=keys.downPressed=keys.leftPressed=keys.rightPressed=keys.aPressed=keys.bPressed=false; }
-function preview(c){ previewS=E.newGame({...c}); $('#day').textContent=`${START[c.startMap].name} · 미리보기`; $('#tile-info').textContent=`${START[c.startMap].name}에서 포동이와 함께 출발한다. ${PERSONALITY[c.pers].name} 성격 · 출현율 ${rateName(c.rate)}.`; fit(); }
+let previewCard=null;
+function preview(c){ previewS=E.newGame({...c}); const m=previewS.party[0];
+  previewCard={title:`${START[c.startMap].name} 출발 · ${PERSONALITY[c.pers].name} 포동이 Lv${m.lv}`,stats:`체력 ${m.maxhp} · 공격 ${m.atk} · 방어 ${m.def} · 속도 ${m.spd}`,world:`야생 출현 ${rateName(c.rate)} · 소지금 ${c.money.toLocaleString('ko-KR')}원 · 시드 ${c.seed}`}; $('#day').textContent=`${START[c.startMap].name} · 미리보기`; $('#tile-info').textContent=`${START[c.startMap].name}에서 포동이와 함께 출발한다. ${PERSONALITY[c.pers].name} 성격 · 출현율 ${rateName(c.rate)}.`; fit(); }
 function fit(){
   if(!canvas.width) return;
   const full=document.getElementById('stage-full');
@@ -128,7 +130,7 @@ function frame(now){
   if(S&&S.status!=='play'&&mode==='play') finish();
   if(S&&mode==='over'&&$('#result-card').hidden&&!S.dialog) resultCard();
   const s=S||previewS;
-  if(s){ try{ R.draw(g,s); }catch(e){ tickError(e); } if(S&&paused&&menu) drawPauseDim(); }
+  if(s){ try{ if(S) R.draw(g,s); else R.preview(g,s,previewCard); }catch(e){ tickError(e); } if(S&&paused&&menu) drawPauseDim(); }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

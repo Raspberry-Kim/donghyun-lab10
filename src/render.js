@@ -91,5 +91,9 @@ function draw(g,S){ g.imageSmoothingEnabled=false;
   const a=S.fade>0?1-S.fade/20:S.fadeIn>0?S.fadeIn/14:0; if(a>0){ g.fillStyle=`rgba(10,8,16,${Math.min(1,a).toFixed(2)})`; g.fillRect(0,0,W,H); }
   if(S.status==='win'&&!S.dialog&&!S.battle){ box(g,60,70,200,52); text(g,'배지를 얻었다!',110,78,'#2e2a38',true); text(g,'동현몬스터 화이트 · 승리',96,98,'#5a5262'); }
 }
-root.Render={draw,drawParty,W,H};
+/* 출전 전 미리보기: 시작 마을 위에 코드가 정한 설정(성격·능력치·출현율·소지금·시드)을 카드로 띄운다. 예제를 바꾸면 바로 바뀐다 */
+function preview(g,S,pv){ draw(g,S); if(!pv) return; const h=56, y=H-h-6; box(g,6,y,W-12,h);
+  sprScaled(g,'m_podong',14,y+8,1.5,false);
+  text(g,'미리보기 · '+pv.title,58,y+6,'#2e2a38',true); text(g,pv.stats,58,y+21,'#5a5262'); text(g,pv.world,58,y+36,'#5a5262'); }
+root.Render={draw,drawParty,preview,W,H};
 })(window);
