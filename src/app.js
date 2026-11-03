@@ -104,6 +104,13 @@ const keys={up:false,down:false,left:false,right:false,upPressed:false,downPress
 function clearPressed(){ keys.upPressed=keys.downPressed=keys.leftPressed=keys.rightPressed=keys.aPressed=keys.bPressed=false; }
 function preview(c){ previewS=E.newGame({...c}); $('#day').textContent=`${START[c.startMap].name} · 미리보기`; $('#tile-info').textContent=`${START[c.startMap].name}에서 포동이와 함께 출발한다. ${PERSONALITY[c.pers].name} 성격 · 출현율 ${rateName(c.rate)}.`; fit(); }
 function fit(){
+  if(!canvas.width) return;
+  const full=document.getElementById('stage-full');
+  if(full&&full.classList.contains('fs')){ /* 전체 화면: 띠와 화면 단추를 뺀 자리에 비율을 지켜 최대로 */
+    const side=full.classList.contains('side'), cs=getComputedStyle(full), h=el=>el&&el.offsetHeight||0;
+    let aw=full.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight), ah=full.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+    if(side) aw-=2*190+20; else ah-=h(full.querySelector('.board-top'))+h(full.querySelector('.board-bottom'))+h(full.querySelector('.touchpad'))+30;
+    canvas.style.width=Math.max(120,Math.min(aw,ah*canvas.width/canvas.height))+'px'; canvas.style.margin='0 auto'; return; }
   const st=canvas.parentElement, w=st.clientWidth; if(!w) return;
   const maxH=Math.max(240,innerHeight-230), byH=maxH*canvas.width/canvas.height;
   canvas.style.width=Math.min(w,byH)+'px'; canvas.style.margin='0 auto';
@@ -151,7 +158,7 @@ function hud(){
 }
 
 /* ---------- 시작·종료 ---------- */
-function liveUI(){ $('#setup-panel').hidden=true; $('#hud').hidden=false; $('#board-wrap').classList.add('live'); $('#touchpad').classList.add('on'); fit(); $('#board-wrap').focus({preventScroll:true}); }
+function liveUI(){ $('#setup-panel').hidden=true; $('#hud').hidden=false; $('#board-wrap').classList.add('live'); $('#touchpad').classList.add('on'); $('#full').disabled=false; fit(); $('#board-wrap').focus({preventScroll:true}); }
 function startGame(c){
   S=E.newGame({...c}); mode='play'; paused=false; closeMenu(); $('#result-card').hidden=true; lastMap=null;
   liveUI(); $('#board-wrap').scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'});
@@ -160,7 +167,7 @@ function startGame(c){
 }
 function backToSetup(){
   S=null; mode='setup'; paused=false; closeMenu(); $('#result-card').hidden=true;
-  $('#setup-panel').hidden=false; $('#hud').hidden=true; $('#board-wrap').classList.remove('live'); $('#touchpad').classList.remove('on');
+  $('#setup-panel').hidden=false; $('#hud').hidden=true; $('#board-wrap').classList.remove('live'); $('#touchpad').classList.remove('on'); exitFull(); $('#full').disabled=true;
   preview(cfg); status('출전 준비'); result('다시 나서려면 코드를 고치거나 그대로 출전을 누르자.'); $('#hint').innerHTML=HINT0; renderSlotList();
 }
 function finish(){
@@ -294,4 +301,25 @@ window.render_game_to_text=()=>JSON.stringify(S?{mode,paused,status:S.status,map
   battle:S.battle?{kind:S.battle.kind,phase:S.battle.phase,text:S.battle.text,foe:{key:S.battle.foes[S.battle.fi].key,hp:S.battle.foes[S.battle.fi].hp}}:null}:{mode:'setup',cfg});
 window.__donghyunmon={get state(){return S;},snapshot,restore,readSlot,saveToSlot,keyDown,keyUp,keys,parseSortie,examples,get mode(){return mode;},start:(c)=>startGame(c||cfg),step:(n=1)=>{for(let i=0;i<n;i++){if(!S||S.status!=='play')break;tickOnce();}}};
 selectExample(); sortieCard(cfg); preview(cfg); renderSlotList();
+/* ---------- 전체 화면(동현둠과 같은 규칙) ---------- */
+const stageFull=$('#stage-full');
+const fullEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+const canNativeFull=!!((document.fullscreenEnabled||document.webkitFullscreenEnabled)&&(stageFull.requestFullscreen||stageFull.webkitRequestFullscreen));
+const isPseudo=()=>stageFull.classList.contains('pseudo-full');
+const isFull=()=>fullEl()===stageFull||isPseudo();
+const SIDE_MQ=matchMedia('(orientation: landscape) and (pointer: coarse)');
+function setPseudo(on){ stageFull.classList.toggle('pseudo-full',on); document.documentElement.classList.toggle('pseudo-full-on',on); onFull(); }
+function exitFull(){ if(isPseudo()) return setPseudo(false); if(fullEl()===stageFull) (document.exitFullscreen||document.webkitExitFullscreen||(()=>{})).call(document); }
+let hintTimer=0;
+function onFull(){ const on=isFull(); stageFull.classList.toggle('fs',on); stageFull.classList.toggle('side',on&&SIDE_MQ.matches);
+  $('#exit-full').hidden=!on; $('#full').textContent=on?'전체 화면 닫기':'전체 화면';
+  clearTimeout(hintTimer); $('#full-hint').hidden=!on; if(on) hintTimer=setTimeout(()=>$('#full-hint').hidden=true,5000);
+  fit(); setTimeout(fit,60); if(on) $('#full').blur(); if(S) hud(); }
+document.addEventListener('fullscreenchange',onFull); document.addEventListener('webkitfullscreenchange',onFull);
+SIDE_MQ.addEventListener?SIDE_MQ.addEventListener('change',onFull):SIDE_MQ.addListener(onFull);
+$('#exit-full').onclick=exitFull;
+$('#full').onclick=()=>{ if(isFull()) return exitFull(); if(!S) return;
+  if(!canNativeFull) return setPseudo(true);
+  try{ const r=stageFull.requestFullscreen?stageFull.requestFullscreen():stageFull.webkitRequestFullscreen();
+    if(r&&r.catch) r.catch(()=>setPseudo(true)); }catch(e){ setPseudo(true); } };
 })();
