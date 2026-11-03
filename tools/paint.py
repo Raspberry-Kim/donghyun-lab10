@@ -189,7 +189,7 @@ pet_up=[
 "..KGGK.GG.KGGK..",
 "..KKKK....KKKK..",
 "................"]
-# 옆: 앞모습을 그대로 돌린 꼴. 큰 머리, 뒤통수 쪽에 늘어진 귀덮개, 앞쪽 코, 목줄, 뒤로 작은 몸과 꼬리.
+# 옆: 앞모습을 그대로 돌린 꼴. 큰 머리, 뒤통수 쪽에 늘어진 귀덮개(3~8행, 처음 길이의 80%), 앞쪽 코, 목줄, 뒤로 작은 몸과 꼬리.
 pet_left=[
 "...KKKKKK.......",
 ".KKWWWWWWKK.....",
@@ -199,14 +199,15 @@ pet_left=[
 "KWKKWWWWKWWWWK..",
 "KKWWWWWWKWWWWK..",
 "KKWWWWWWKWWWWK..",
-".KWWWWWWKKWWWKK.",
-"..KKRRRRRKWWWKWK",
-"...KWWWWWKKWWKWK",
+".KWWWWWWKKKKKKK.",
+"..KKRRRRRRRRRKWK",
+"...KWWWWWWWWWKWK",
 "...KWWWWWWWWWWK.",
 "...KWWKWWWWKWWK.",
 "...KGGK..KGGKK..",
 "...KKKK..KKKK...",
-"................"]
+"................"
+]
 pet_left2=[
 "...KKKKKK.......",
 ".KKWWWWWWKK.....",
@@ -216,14 +217,15 @@ pet_left2=[
 "KWKKWWWWKWWWWK..",
 "KKWWWWWWKWWWWK..",
 "KKWWWWWWKWWWWK..",
-".KWWWWWWKKWWWKK.",
-"..KKRRRRRKWWWKWK",
-"...KWWWWWKKWWKWK",
+".KWWWWWWKKKKKKK.",
+"..KKRRRRRRRRRKWK",
+"...KWWWWWWWWWKWK",
 "...KWWWWWWWWWWK.",
 "...KWWKWWWWKWWK.",
 "..KGGKK..KGGK...",
 "..KKKK...KKKK...",
-"................"]
+"................"
+]
 add('pet_down',pet_down); add('pet_up',pet_up); add('pet_left',pet_left); add('pet_left2',pet_left2)
 pet_down2=[
 ".....KKKKKK.....",
@@ -264,28 +266,28 @@ add('pet_down2',pet_down2); add('pet_up2',pet_up2)
 # ---------- 동현몬 24×24 ----------
 MON={}
 def mon(key,g): MON[key]=S(g)
-# 포동이: 동현크 그림(24×20)
+# 포동이: 동현크 P_idle(24×20)을 그대로 쓴다(donghyuncr/src/sprites.js와 같은 글자 격자)
 podong=[
-"...........KKKKKK.......",
-".........KKWWWWWWKK.....",
-"..KKK....KWWWWWWWWK.....",
-".KWWWK..KWWWWWWWWWWK....",
-".KWWWK..KWWEKKWEKKWK....",
-"..KWWKKKKWWKKKWKKKWKK...",
-"...KWKWWKWWKKKWKKKWWWK..",
-"....KWWWWWWWWWWWWWWWWK..",
-"..KKKKKKKKKKWWWWWKKWWK..",
-".KWWWWWWWWWKWWWWWKKWWK..",
-"KWWWWWWWWWKKWWWWWWWWWK..",
-"KWWWWWWWWWRRKKWWWWWWKK..",
-"KWWWWWWWWWKRRRKKWWKK....",
-"KWWWWWWWWWWWKRRWWWWK....",
-"KWWWWWWWWWWWWKKWWWWK....",
-".KWWWKKWWWWWKKWWWKK.....",
-"..KWWWKGGGKKKWWWK.......",
-"..KWWWKKGGGKKWWWK.......",
-"..KGGGK.KKK.KGGGK.......",
-"..KKKKK.....KKKKK.......",
+"..............KKKKKK....",
+"............KKWWWWWWKK..",
+"...........KKWWWWWWWWK..",
+".KKK......KWWKWWWWWWWKK.",
+"KWWWK.....KWWKEKKWEKKWWK",
+"KWWWK.....KWWKKKKWKKKWWK",
+".KWWK......KKWKKKWKKKKK.",
+"..KWK......KWWWWWWWWWWK.",
+"...KKKKKKKKKWWWWWKKWWWK.",
+"...KWWWWWWWKWWWWWKKWWWK.",
+"..KWWWWWWWWWKKWWWWWWKK..",
+"..KWWWWWWWKRRWKKKKKK....",
+"..KWWWWWWWKRRRWWWK......",
+"..KWWWWWWWWKKRRWWK......",
+"...KWWWWWWWWWKKWK.......",
+"..KWWWKKKKWWWKKKK.......",
+"..KWWWKGGKWWWKGGK.......",
+"..KGGGKGGKGGGKGGK.......",
+"..KKKKKKKKKKKKKKK.......",
+"........................",
 "........................",
 "........................",
 "........................",

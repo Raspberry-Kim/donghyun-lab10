@@ -76,7 +76,7 @@ function drawBattle(g,S){ const B=S.battle, me=S.party[B.me], f=B.foes[B.fi], fr
   if(B.phase==='menu'){ const lines=wrap(g,B.text,150); lines.slice(0,3).forEach((l,i)=>text(g,l,12,H-44+i*13)); box(g,170,H-50,148,48);
     ['싸운다','가방','동현몬','도망'].forEach((s,i)=>{ const x=190+(i%2)*68, y=H-42+Math.floor(i/2)*18; text(g,s,x,y,'#2e2a38',true); if(B.cursor===i) text(g,'▶',x-12,y); }); }
   else if(B.phase==='moves'){ const mv=me.moves; mv.forEach((k,i)=>{ text(g,MOVES[k].name,24,H-45+i*11); if(B.mcur===i) text(g,'▶',10,H-45+i*11); });
-    const m=MOVES[mv[B.mcur]]; box(g,170,H-50,148,48); text(g,'속성 '+TYPES[m.type],180,H-44); text(g,'위력 '+(m.pow||'—'),180,H-31); text(g,'명중 '+(m.acc||100),250,H-31); text(g,m.desc||'',180,H-18,'#5a5262'); }
+    const m=MOVES[mv[Math.min(B.mcur,mv.length-1)]]||{type:'normal'}; box(g,170,H-50,148,48); text(g,'속성 '+TYPES[m.type],180,H-44); text(g,'위력 '+(m.pow||'—'),180,H-31); text(g,'명중 '+(m.acc||100),250,H-31); text(g,m.desc||'',180,H-18,'#5a5262'); }
   else if(B.phase==='bag'){ const list=['ball','potion','superpotion'].filter(k=>S.bag[k]>0); if(!list.length) text(g,'가방이 비었다.',24,H-44);
     list.forEach((k,i)=>{ text(g,`${ITEMS[k].name} ×${S.bag[k]}`,24,H-45+i*11); if(B.bcur===i) text(g,'▶',10,H-45+i*11); }); text(g,'Z 돌아가기',240,H-16,'#5a5262'); }
   else { const lines=wrap(g,B.text.slice(0,B.n),W-28); lines.slice(0,3).forEach((l,i)=>text(g,l,12,H-44+i*13)); }

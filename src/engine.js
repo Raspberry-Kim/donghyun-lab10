@@ -174,17 +174,17 @@ function battleTick(S,keys){
     }
     const c=B.cur;
     if(c.t==='msg'){ if(B.n<B.text.length){ B.n++; if(B.n%3===0) S.events.push({t:'blip'}); if(keys.aPressed||keys.bPressed) B.n=B.text.length; return; } B.wait++; if(keys.aPressed||keys.bPressed||B.wait>50){ B.cur=null; } return; }
-    if(c.t==='hp'){ const m=c.who==='foe'?foe(B):mine(S,B); if(m.hp>c.to){ m.hp=Math.max(c.to,m.hp-Math.max(1,Math.ceil(m.maxhp/40))); } else if(m.hp<c.to){ m.hp=Math.min(c.to,m.hp+Math.max(1,Math.ceil(m.maxhp/40))); } else B.cur=null; return; }
-    if(c.t==='exp'){ const m=mine(S,B); if(m.exp<c.to){ m.exp=Math.min(c.to,m.exp+Math.max(1,Math.ceil((c.to-c.from)/30))); } else B.cur=null; return; }
-    if(c.t==='pause'){ B.wait++; if(B.wait>=c.n) B.cur=null; return; }
-    return;
+    if(c.t==='hp'){ const m=c.who==='foe'?foe(B):mine(S,B); if(!Number.isFinite(c.to)||!Number.isFinite(m.hp)){ m.hp=Number.isFinite(c.to)?c.to:0; B.cur=null; return; } if(m.hp>c.to){ m.hp=Math.max(c.to,m.hp-Math.max(1,Math.ceil(m.maxhp/40))); } else if(m.hp<c.to){ m.hp=Math.min(c.to,m.hp+Math.max(1,Math.ceil(m.maxhp/40))); } else B.cur=null; return; }
+    if(c.t==='exp'){ const m=mine(S,B); if(!Number.isFinite(c.to)||!Number.isFinite(m.exp)){ if(Number.isFinite(c.to)) m.exp=c.to; B.cur=null; return; } if(m.exp<c.to){ m.exp=Math.min(c.to,m.exp+Math.max(1,Math.ceil((c.to-c.from)/30))); } else B.cur=null; return; }
+    if(c.t==='pause'){ B.wait++; if(B.wait>=(c.n||1)) B.cur=null; return; }
+    B.cur=null; return; /* 모르는 항목은 건너뛴다 */
   }
   if(B.phase==='menu'){
     if(keys.leftPressed||keys.rightPressed){ B.cursor^=1; S.events.push({t:'tick'}); } if(keys.upPressed||keys.downPressed){ B.cursor^=2; S.events.push({t:'tick'}); }
     if(keys.aPressed){ S.events.push({t:'pop'}); if(B.cursor===0){ B.phase='moves'; } else if(B.cursor===1){ B.phase='bag'; B.bcur=0; } else if(B.cursor===2){ B.phase='party'; B.forced=false; B.pcur=0; } else tryRun(S,B); }
     return;
   }
-  if(B.phase==='moves'){ const mv=mine(S,B).moves;
+  if(B.phase==='moves'){ const mv=mine(S,B).moves; if(B.mcur>=mv.length) B.mcur=0; /* 기술이 적은 동현몬으로 바꾼 뒤 커서가 범위를 벗어나 멈추던 것 */
     if(keys.upPressed){ B.mcur=(B.mcur-1+mv.length)%mv.length; S.events.push({t:'tick'}); } if(keys.downPressed){ B.mcur=(B.mcur+1)%mv.length; S.events.push({t:'tick'}); }
     if(keys.bPressed){ B.phase='menu'; return; }
     if(keys.aPressed){ S.events.push({t:'pop'}); B.phase='q'; turn(S,B,{type:'move',key:mv[B.mcur]}); }
@@ -283,5 +283,5 @@ step=function(S,keys){ _step(S,keys); tickPending(S); if(S.fadeIn>0) S.fadeIn--;
 /* 바깥 가방 쓰기(메뉴) */
 function useOutside(S,key,pi){ const m=S.party[pi], it=ITEMS[key]; if(!it.heal||!(S.bag[key]>0)) return '쓸 수 없다.'; if(m.hp<=0) return `${name(m)}은(는) 쓰러져 있어 상처약이 듣지 않는다.`; if(m.hp>=m.maxhp) return `${name(m)}의 체력은 이미 가득하다.`; S.bag[key]--; m.hp=Math.min(m.maxhp,m.hp+it.heal); S.events.push({t:'heal'}); return `${name(m)}의 체력이 ${m.hp}/${m.maxhp}이 되었다.`; }
 function swapParty(S,i,j){ if(S.battle) return false; const t=S.party[i]; S.party[i]=S.party[j]; S.party[j]=t; return true; }
-root.Engine={newGame,step,rng:mulberry32,josa,makeMon,calcStats,expFor,species,name,effect,useOutside,swapParty,map,tile,T,MAXLV,PARTY,DIRS};
+root.Engine={newGame,step,startBattle,rng:mulberry32,josa,makeMon,calcStats,expFor,species,name,effect,useOutside,swapParty,map,tile,T,MAXLV,PARTY,DIRS};
 })(window);

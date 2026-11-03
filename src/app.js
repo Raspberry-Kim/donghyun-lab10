@@ -110,15 +110,18 @@ function fit(){
 }
 let last=0, acc=0; const STEP=1000/60;
 function tickOnce(){ E.step(S,keys); clearPressed(); if(S.map!==lastMap){ lastMap=S.map; S.mapTitle=110; $('#day').textContent=MAPS[S.map].name; $('#tile-info').textContent=MAPS[S.map].kind==='out'?'긴 풀을 지나면 야생 동현몬이 나온다. 표지판과 사람에게 X로 말을 걸자.':'문 앞 매트를 밟으면 밖으로 나간다.'; } else if(S.mapTitle>0) S.mapTitle--; events(); }
+/* 한 번의 예외로 화면 전체가 멈추지 않게 한다: 기록하고, 전투 중이면 그 장면을 건너뛴다 */
+let errCount=0;
+function tickError(e){ errCount++; console.error('동현몬 오류',e); if(errCount===1) status('오류가 있어 한 장면을 건너뛰었다 · '+(e&&e.message||e).slice(0,60),'bad'); if(S&&S.battle){ const B=S.battle; B.cur=null; if(B.phase!=='q'&&B.phase!=='menu'&&B.phase!=='party'){ B.phase='menu'; } if(B.phase==='moves'||B.mcur>=S.party[B.me].moves.length) B.mcur=0; } if(errCount>50){ paused=true; status('오류가 반복되어 멈췄다 · 메뉴(Enter)에서 저장하거나 포기할 수 있다','bad'); } }
 function frame(now){
   if(S&&S.status==='play'&&!paused){
     if(!last) last=now; acc=Math.min(acc+(now-last),100); last=now;
-    while(acc>=STEP){ tickOnce(); acc-=STEP; if(S.status!=='play') break; }
+    while(acc>=STEP){ try{ tickOnce(); }catch(e){ tickError(e); } acc-=STEP; if(S.status!=='play') break; }
   } else { last=now; acc=0; }
   if(S&&S.status!=='play'&&mode==='play') finish();
   if(S&&mode==='over'&&$('#result-card').hidden&&!S.dialog) resultCard();
   const s=S||previewS;
-  if(s){ R.draw(g,s); if(S&&paused&&menu) drawPauseDim(); }
+  if(s){ try{ R.draw(g,s); }catch(e){ tickError(e); } if(S&&paused&&menu) drawPauseDim(); }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
