@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="동현랭으로 출전하는 포동이와 동현의 작은 동현몬스터 모험이다.">
+  <title>동현몬™ · 동현몬스터 화이트</title>
+  <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="header">
+  <a class="brand" href="#" aria-label="동현몬 첫 화면으로"><span class="brand-main"><img class="brand-icon" src="__BRAND_ICON__" alt="" width="96" height="96">동현<span>몬</span><sup>TM</sup></span><i class="brand-divider"></i><span class="brand-sub">MONSTER RPG<small>동현몬스터 화이트 · 포동이와 함께</small></span></a>
+  <div class="edition">v0.01<button id="sound" class="icon-btn" aria-label="효과음 켜기·끄기" title="효과음 (M)" aria-pressed="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="snd-off" d="m16 9 6 6m0-6-6 6"/></svg></button><button id="theme" class="icon-btn" aria-label="밝은 화면과 어두운 화면 전환" title="화면 전환" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
+</header>
+<main>
+<!-- SERIES-NAV-START -->
+<nav class="series-strip" aria-label="동현 프로젝트 이동"><p class="series-context"><strong>동현의 작은 실험들</strong>하나의 언어, 열 개의 작은 세계</p><div class="series-links"><a class="series-item" data-series="lang" href="https://raspberry-kim.github.io/donghyun-lang/" aria-label="동현랭™ 언어 플레이그라운드로 이동"><span class="series-name">동현랭<sup>™</sup></span><span class="series-note">언어</span></a><a class="series-item" data-series="fly" href="https://raspberry-kim.github.io/donghyun-lab1/" aria-label="동현초™ 초파리 회로실험실로 이동"><span class="series-name">동현초<sup>™</sup></span><span class="series-note">초파리</span></a><a class="series-item" data-series="worm" href="https://raspberry-kim.github.io/donghyun-lab2/" aria-label="동현파™ 선충 회로실험실로 이동"><span class="series-name">동현파<sup>™</sup></span><span class="series-note">선충</span></a><a class="series-item" data-series="village" href="https://raspberry-kim.github.io/donghyun-lab3/" aria-label="동현빌™ 마을 유행 실험실로 이동"><span class="series-name">동현빌<sup>™</sup></span><span class="series-note">마을</span></a><a class="series-item" data-series="tactics" href="https://raspberry-kim.github.io/donghyun-lab4/" aria-label="동현전™ 전술 실험실로 이동"><span class="series-name">동현전<sup>™</sup></span><span class="series-note">전략</span></a><a class="series-item" data-series="copter" href="https://raspberry-kim.github.io/donghyun-lab5/" aria-label="동현콥™ 원버튼 비행 실험실로 이동"><span class="series-name">동현콥<sup>™</sup></span><span class="series-note">비행</span></a><a class="series-item" data-series="ten" href="https://raspberry-kim.github.io/donghyun-lab6/" aria-label="동현텐™ 숫자 짝 실험실로 이동"><span class="series-name">동현텐<sup>™</sup></span><span class="series-note">숫자</span></a><a class="series-item" data-series="war" href="https://raspberry-kim.github.io/donghyun-lab7/" aria-label="동현워™ 중세 전술 실험실로 이동"><span class="series-name">동현워<sup>™</sup></span><span class="series-note">중세</span></a><a class="series-item" data-series="doom" href="https://raspberry-kim.github.io/donghyun-lab8/" aria-label="동현둠™ 1인칭 슈팅 실험실로 이동"><span class="series-name">동현둠<sup>™</sup></span><span class="series-note">1인칭</span></a><a class="series-item" data-series="cr" href="https://raspberry-kim.github.io/donghyun-lab9/" aria-label="동현크™ 플랫폼 액션 실험실로 이동"><span class="series-name">동현크<sup>™</sup></span><span class="series-note">플랫폼</span></a><span class="series-item is-current" data-series="mon" aria-current="page"><span class="series-name">동현몬<sup>™</sup></span><span class="series-note">모험 · 지금 여기</span></span></div></nav>
+<!-- SERIES-NAV-END -->
+  <section class="intro">
+    <div><div class="eyebrow">MONSTER RPG × ESOTERIC LANGUAGE</div><h1>동현몬스터 실험실: <span class="title-brand">동현<span>몬</span><sup>TM</sup></span></h1><p><strong>동현랭</strong>으로 시작 마을·포동이의 성격·야생 출현율·소지금을 정하고 나서는 작은 모험이다. 주인공 동현의 뒤를 실험실의 강아지 <strong>포동이</strong>가 따라다닌다. 풀숲에서 동현몬을 만나 싸우고, 동현볼로 잡고, 동현시 체육관의 배지를 노린다.</p></div>
+    <div class="model-stamp"><strong>13 <span>동현몬</span></strong><strong>6 <span>속성</span></strong><small>마을 2 · 산책로 1 · 체육관 1 · 트레이너 5</small></div>
+  </section>
+  <nav class="tabs" aria-label="동현몬 메뉴"><button class="active" data-tab="play" aria-current="page">모험</button><button data-tab="protocol">동현몬 출전 규약</button><button data-tab="rules">규칙과 동현몬</button><button data-tab="about">모델과 출처</button><span>출전은 동현랭으로, 모험은 키보드로</span></nav>
+  <div class="getting-started"><p><strong>처음이라면?</strong> 예제를 고르고 <b>출전</b>을 눌러 보자. 시작 마을·포동이 성격·야생 출현율·소지금·시드는 모두 <b>동현랭</b> 명령으로만 정한다.</p><a href="https://raspberry-kim.github.io/donghyun-lang/" target="_blank" rel="noopener">동현랭 배우기 · 실행기 ↗</a></div>
+
+  <section id="tab-play" class="tab-panel">
+    <div class="play-grid" id="play-grid">
+      <div class="field-col">
+        <div class="section-title"><h2><span>A</span> 모험</h2><span id="status" role="status">출전 준비</span></div>
+        <div class="board-wrap" id="board-wrap" tabindex="0" aria-label="동현몬 지도. 방향키로 걷고 X로 말을 건다.">
+          <div class="board-top"><span id="day">출전 준비</span><span id="turn-badge"></span></div>
+          <div class="board-stage hero-board"><canvas id="board" width="320" height="192" role="img" aria-label="동현몬 지도와 동현, 포동이"></canvas>
+            <div id="menu" class="game-menu" hidden role="menu"></div>
+            <div id="result-card" class="result-card" hidden></div>
+          </div>
+          <div class="board-bottom"><span id="tile-info">마을을 미리 보고 있다.</span><span id="hint"><span><kbd>X</kbd>확인·말걸기</span><span><kbd>Z</kbd>취소</span><span><kbd>S</kbd>동현몬</span><span><kbd>↵</kbd>메뉴</span></span></div>
+        </div>
+        <div class="touchpad" id="touchpad" aria-label="화면 조작 단추">
+          <div class="dpad"><button data-key="ArrowUp" aria-label="위"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button><button data-key="ArrowLeft" aria-label="왼쪽"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button><button data-key="ArrowDown" aria-label="아래"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button><button data-key="ArrowRight" aria-label="오른쪽"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button></div>
+          <div class="pad-keys"><button data-key="x">X<small>확인</small></button><button data-key="z">Z<small>취소</small></button><button data-key="s">S<small>동현몬</small></button><button data-key="a">A<small>정보</small></button><button data-key="Enter" aria-label="Enter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 5v6a3 3 0 0 1-3 3H5"/><path d="M9 10l-4 4 4 4"/></svg><small>메뉴</small></button></div>
+        </div>
+      </div>
+      <div class="side-col">
+        <section class="setup-panel" id="setup-panel">
+          <div class="section-title"><h2><span>B</span> 동현랭 출전 코드</h2><span>sortie.dh</span></div>
+          <div class="dh-panel">
+            <div class="dh-head"><select id="example" aria-label="동현랭 출전 예제 선택"></select><span class="dh-spacer"></span><button id="run" class="dh-btn dh-run" title="Ctrl/⌘ + Enter"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>출전 <kbd>⌘↵</kbd></button></div>
+            <div class="code-wrap"><div id="lines" aria-hidden="true"></div><textarea id="code" aria-label="동현랭 출전 코드" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea></div>
+            <div class="code-meta dh-status"><span id="line-count"></span><span>정수 출력 → 출전 명령 · ⌘/Ctrl ↵ 실행</span></div>
+          </div>
+          <p id="example-note"></p>
+          <div class="sortie-card" id="sortie-card"></div>
+          <p id="result" aria-live="polite">예제를 고른 뒤 출전을 눌러 보자. 시작 마을·성격·출현율·소지금·시드는 코드로만 정한다.</p>
+          <div class="file-row"><button id="save">.dh 저장</button><label class="file-label">.dh 열기<input id="open" type="file" accept=".dh,.txt,text/plain" hidden></label></div>
+          <div class="load-box"><div class="load-head"><strong>저장한 판 불러오기</strong><label class="file-label" tabindex="0">파일에서 불러오기<input id="load-file-setup" type="file" accept=".dhsave,.json,application/json" hidden></label></div><div class="slot-list" id="slot-list"></div><p class="slot-note">브라우저 칸 3개는 이 기기의 이 브라우저에만 남는다. 다른 기기나 브라우저로는 옮겨지지 않고, 사이트 데이터를 지우거나 사생활 보호 창을 닫으면 사라진다. Safari는 이 사이트를 7일 동안 열지 않으면 칸을 지울 수 있다. 오래 둘 판은 <b>.dhsave</b> 파일로 내려받아 두자. 필요 없는 칸은 <b>지우기</b>를 두 번 눌러 비운다.</p></div>
+        </section>
+        <section class="hud" id="hud" hidden>
+          <div class="party-card" id="party-card"></div>
+          <div class="info-card grid" id="info-card"></div>
+          <div class="log-card"><div class="section-title"><h2><span>C</span> 모험 기록</h2><button id="concede" class="small-btn">포기하고 출전 준비로</button></div><ol id="log"></ol></div><input id="load-file" type="file" accept=".dhsave,.json,application/json" hidden>
+          <div class="keys"><span><span class="kbd-arrows"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></span>걷기 · 고르기</span><span><kbd>X</kbd>말걸기 · 줍기 · 확인</span><span><kbd>Z</kbd>취소 · 대화 넘기기</span><span><kbd>S</kbd>동현몬 순서·상처약</span><span><kbd>A</kbd>지금 상태 한 줄</span><span><kbd>Enter</kbd>메뉴(동현몬·가방·도감·저장·불러오기·포기)</span><span><kbd>M</kbd>효과음</span></div>
+        </section>
+      </div>
+    </div>
+    <div class="workflow"><span>동현랭 코드</span><b>→</b><span>마을·성격·출현율·소지금</span><b>→</b><span>출전</span><b>→</b><span>풀숲 · 전투 · 포획</span><b>→</b><span>체육관 배지</span></div>
+  </section>
+
+  <section id="tab-protocol" class="tab-panel document" hidden>
+    <div class="doc-heading"><div class="eyebrow">SORTIE I/O · v0.01</div><h2>출전은 동현랭으로, 모험은 키보드로.</h2><p>동현랭 프로그램이 출력한 정수를 차례로 읽는다. 명령 번호 하나 뒤에 값 하나가 온다. 마지막에 <code>6</code>을 출력해야 모험을 떠난다. 출전한 뒤에는 동현랭을 쓰지 않는다.</p></div>
+    <div class="table-wrap"><table><thead><tr><th>명령</th><th>하는 일</th><th>값</th><th>기본값</th></tr></thead><tbody>
+      <tr><td>1</td><td>시작 마을</td><td>1 하얀마을(집 앞 · 동현볼은 박사에게 받는다) · 2 산책로(풀숲 한가운데 · 동현볼 5개) · 3 동현시(체육관 앞 · 동현볼 5개)</td><td>1</td></tr>
+      <tr><td>2</td><td>포동이 성격</td><td>1 균형 · 2 공격형(공격 +10%, 방어 −10%) · 3 방어형 · 4 재빠름(속도 +10%, 체력 −10%) · 5 느긋함(체력 +10%, 속도 −10%)</td><td>1</td></tr>
+      <tr><td>3</td><td>야생 출현율</td><td>0 없음(긴 풀에서 아무도 나오지 않는다) · 1 기본 · 2~5 점점 자주</td><td>1</td></tr>
+      <tr><td>4</td><td>소지금</td><td>0~9999원. 동현볼 200원 · 상처약 300원 · 좋은상처약 700원</td><td>1000</td></tr>
+      <tr><td>5</td><td>시드</td><td>정수. 같은 시드면 같은 야생 동현몬이 같은 순서로 나온다</td><td>1</td></tr>
+      <tr><td>6</td><td>출전</td><td>값 없음 · 반드시 마지막에</td><td>—</td></tr>
+    </tbody></table></div>
+    <div class="doc-columns"><div><h3>고정된 조건</h3><p>첫 동현몬은 언제나 포동이 Lv5다. 상처약 2개를 들고 출발한다. 동현몬은 여섯까지 데리고 다니고, 넘치면 상자로 간다. 모든 동현몬이 쓰러지면 소지금의 절반을 잃고 마지막으로 회복한 곳(처음에는 출발 지점)으로 돌아간다. 동현시 체육관 관장 동현을 이기면 배지를 얻고 모험이 끝난다.</p><p>명령 순서는 자유지만 예제는 <b>시작 마을 → 성격 → 출현율 → 소지금 → 시드 → 출전</b> 차례로 적었다. 명령이 아닌 정수나 범위 밖의 값이 나오면 출전하지 않고 어디가 틀렸는지 알려 준다.</p></div>
+    <div><h3>예시</h3><pre class="code-example">나는 동현이냐?
+  ㅋㅋ 시작 마을 2 · 산책로
+  뿡뿡 도옹~뿡뿡뿡~뿡뿡 도오옹~뿡뿡뿡
+  ㅋㅋ 성격 2 · 공격형
+  뿡뿡 도오옹~뿡뿡뿡~뿡뿡 도오옹~뿡뿡뿡
+  ㅋㅋ 출전
+  뿡뿡 도오오오오오옹~뿡뿡뿡
+동현이구나</pre><p>동현랭 문법은 <a href="https://raspberry-kim.github.io/donghyun-lang/" target="_blank" rel="noopener">동현랭 플레이그라운드</a>에서 배울 수 있다.</p></div></div>
+  </section>
+
+  <section id="tab-rules" class="tab-panel document" hidden>
+    <div class="doc-heading"><div class="eyebrow">HOW TO PLAY</div><h2>동현시 체육관의 배지를 얻으면 이긴다.</h2><p>하얀마을 → 산책로 → 동현시 순서로 이어진다. 긴 풀을 지나면 야생 동현몬이 나오고, 눈이 마주친 트레이너는 승부를 걸어온다. 전투는 차례대로 기술 하나씩 쓰는 턴제다. 회복소에서는 공짜로 모두 낫고, 가게에서는 동현볼과 상처약을 판다.</p></div>
+    <div class="doc-columns"><div><h3>키보드</h3><table class="key-table"><tbody>
+      <tr><td><span class="kbd-arrows"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></span></td><td>걷기. 대화·전투·메뉴에서는 고르기</td></tr>
+      <tr><td><kbd>X</kbd></td><td>앞 사람에게 말걸기 · 표지판 읽기 · 물건 줍기 · 확인. 대화 글은 한 번 누르면 다 나오고 한 번 더 누르면 넘어간다</td></tr>
+      <tr><td><kbd>Z</kbd></td><td>취소 · 대화 넘기기 · 전투 메뉴에서 되돌아가기</td></tr>
+      <tr><td><kbd>S</kbd></td><td>동현몬 목록(순서 바꾸기 · 상처약 쓰기). 지도 위에서만</td></tr>
+      <tr><td><kbd>A</kbd></td><td>지금 있는 곳·앞장선 동현몬·소지금을 한 줄로 알려 준다</td></tr>
+      <tr><td><kbd>M</kbd></td><td>효과음 켜기·끄기(머리말 스피커 단추와 같다)</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>메뉴: 계속 · 동현몬 · 가방 · 도감 · 저장 · 불러오기 · 포기. 메뉴가 열린 동안 게임은 멈춘다. 저장은 지도 위에서만 된다</td></tr>
+    </tbody></table></div>
+    <div><h3>규칙 요약</h3><ul>
+      <li>전투: 속도가 높은 쪽이 먼저 움직인다. 기술에는 속성·위력·명중이 있고, 쓰는 동현몬과 같은 속성이면 1.5배, 상대 속성에 따라 2배·½·0배가 된다. 가끔 급소에 맞아 1.5배가 된다.</li>
+      <li>포획: 야생 전투에서 가방의 동현볼을 던진다. 상대 체력이 낮을수록, 동현몬 종류의 포획률이 높을수록 잘 잡힌다. 트레이너의 동현몬은 잡을 수 없다.</li>
+      <li>성장: 이기면 경험치를 얻고 레벨이 오른다. 레벨에 따라 새 기술을 배우며, 기술은 네 개까지 기억한다(가장 오래된 것부터 잊는다).</li>
+      <li>교대·도망: 전투 중 동현몬을 바꾸면 그 차례는 상대가 먼저 공격한다. 야생에서는 도망칠 수 있고, 트레이너에게서는 도망칠 수 없다.</li>
+      <li>패배: 모두 쓰러지면 소지금 절반을 잃고 마지막 회복소(또는 출발 지점)로 돌아가 모두 회복한다.</li>
+      <li>저장: Enter 메뉴에서 브라우저 칸 3개나 .dhsave 파일로 판을 저장하고, 출전 준비 화면이나 메뉴에서 불러온다. 동현전·동현워·동현크와 같은 방식이다.</li>
+    </ul></div></div>
+    <h3>동현몬 도감</h3>
+    <div class="co-grid" id="mon-grid"></div>
+    <h3>속성 상성</h3>
+    <div class="table-wrap"><table id="type-table" class="type-table"></table></div>
+  </section>
+
+  <section id="tab-about" class="tab-panel document" hidden>
+    <div class="doc-heading"><div class="eyebrow">WHAT IS NEW, WHAT IS BORROWED</div><h2>구조만 참고하고, 그림·지도·글·코드는 새로 만들었다.</h2><p>동현몬은 게임보이용 「포켓몬스터 피카츄」(1998)의 큰 틀(마을과 풀숲을 오가며 괴물을 만나고, 턴제로 싸우고, 공으로 잡아 모으고, 체육관에 도전하며, 첫 동반자가 뒤를 따라다니는 구성)을 참고한 팬 실험이다.</p></div>
+    <div class="science-block"><span class="index">01</span><div><h3>원작의 그림·소리·지도·글·이름은 담지 않았다.</h3><p>원작의 그래픽, 음악·효과음, 지도 배치, 대사, 괴물의 이름과 모습은 하나도 쓰지 않는다. 화면의 모든 도트 그림과 지도, 대사, 기술 이름, 효과음은 동현몬 코드로 새로 만들었다. 전투 공식은 널리 알려진 턴제 RPG의 일반적인 형태(레벨·공격·방어·속성 배율)를 단순화해 새로 적었다.</p></div></div>
+    <div class="science-block"><span class="index">02</span><div><h3>등장하는 동현몬은 모두 실험실 식구다.</h3><p>포동이(실험실의 강아지)를 비롯해 동현파의 라이언·슈슈, 동현초의 초파리, 동현빌의 꼬마선충, 동현전의 보병·전차·전투기, 동현워의 창병·궁수·기사, 동현콥의 꼬리콥터, 동현둠의 둠가이가 동현몬으로 나온다.</p></div></div>
+    <div class="science-block"><span class="index">03</span><div><h3>상표와 관계</h3><p>포켓몬스터(Pokémon)는 닌텐도·크리처스·게임프리크의 상표이자 저작물이다. 동현몬은 이들과 관계가 없고, 승인이나 후원을 받지 않았다.</p></div></div>
+    <div class="science-block"><span class="index">04</span><div><h3>코드와 글꼴의 이용 조건</h3><p>동현몬 코드는 MIT, 글꼴(검은고딕 Black Han Sans · Pretendard · 나눔고딕코딩)은 SIL Open Font License를 따른다. 동현랭 실행기는 동현랭 저장소의 MIT 코드를 그대로 쓴다. 포동이의 모습과 이름에 대한 권리는 코드 라이선스와 별개로 만든 사람에게 있다.</p></div></div>
+    <aside class="maker-note"><span class="eyebrow">만든 사람</span><p>인하대학교 의과대학 김동현 교수는 백신학·감염학을 연구한다. 동현몬은 동현랭 시리즈의 열 번째 프로젝트이다.</p></aside>
+  </section>
+</main>
+<footer><span>동현몬 v0.01 · 인하대학교 의과대학 교수 김동현</span><span>1인용 · 동현몬스터 화이트 · 배지 1개</span><span><a href="https://raspberry-kim.github.io/donghyun-lang/" target="_blank" rel="noopener">동현랭</a> · <a href="https://github.com/Raspberry-Kim/donghyun-lang" target="_blank" rel="noopener">동현랭 GitHub</a> · <a href="https://github.com/Raspberry-Kim/donghyun-lab10" target="_blank" rel="noopener">동현몬 GitHub</a></span></footer>
+<script src="./game.js"></script>
+</body></html>
