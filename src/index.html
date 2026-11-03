@@ -12,7 +12,7 @@
 <body>
 <header class="header">
   <a class="brand" href="#" aria-label="동현몬 첫 화면으로"><span class="brand-main"><img class="brand-icon" src="__BRAND_ICON__" alt="" width="96" height="96">동현<span>몬</span><sup>TM</sup></span><i class="brand-divider"></i><span class="brand-sub">MONSTER RPG<small>동현몬스터 화이트 · 포동이와 함께</small></span></a><a class="doi-badge" href="https://doi.org/10.5281/zenodo.23914029" target="_blank" rel="noopener" aria-label="동현몬 Zenodo DOI 10.5281/zenodo.23914029" title="Zenodo DOI (모든 버전)"><b>DOI</b><span>10.5281/zenodo.23914029</span></a>
-  <div class="edition">v0.07<button id="sound" class="icon-btn" aria-label="효과음 켜기·끄기" title="효과음 (M)" aria-pressed="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="snd-off" d="m16 9 6 6m0-6-6 6"/></svg></button><button id="theme" class="icon-btn" aria-label="밝은 화면과 어두운 화면 전환" title="화면 전환" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
+  <div class="edition">v0.08<button id="sound" class="icon-btn" aria-label="효과음 켜기·끄기" title="효과음 (M)" aria-pressed="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="snd-off" d="m16 9 6 6m0-6-6 6"/></svg></button><button id="theme" class="icon-btn" aria-label="밝은 화면과 어두운 화면 전환" title="화면 전환" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
 </header>
 <main>
 <!-- SERIES-NAV-START -->
@@ -71,7 +71,7 @@
   </section>
 
   <section id="tab-protocol" class="tab-panel document" hidden>
-    <div class="doc-heading"><div class="eyebrow">SORTIE I/O · v0.07</div><h2>출전은 동현랭으로, 모험은 키보드나 게임패드로.</h2><p>동현랭 프로그램이 출력한 정수를 차례로 읽는다. 명령 번호 하나 뒤에 값 하나가 온다. 마지막에 <code>6</code>을 출력해야 모험을 떠난다. 출전한 뒤에는 동현랭을 쓰지 않는다.</p></div>
+    <div class="doc-heading"><div class="eyebrow">SORTIE I/O · v0.08</div><h2>출전은 동현랭으로, 모험은 키보드나 게임패드로.</h2><p>동현랭 프로그램이 출력한 정수를 차례로 읽는다. 명령 번호 하나 뒤에 값 하나가 온다. 마지막에 <code>6</code>을 출력해야 모험을 떠난다. 출전한 뒤에는 동현랭을 쓰지 않는다.</p></div>
     <div class="table-wrap"><table><thead><tr><th>명령</th><th>하는 일</th><th>값</th><th>기본값</th></tr></thead><tbody>
       <tr><td>1</td><td>시작 마을</td><td>1 하얀마을(집 앞 · 동현볼은 박사에게 받는다) · 2 산책로(풀숲 한가운데 · 동현볼 5개) · 3 동현시(체육관 앞 · 동현볼 5개)</td><td>1</td></tr>
       <tr><td>2</td><td>포동이 성격</td><td>1 균형 · 2 공격형(공격 +10%, 방어 −10%) · 3 방어형 · 4 재빠름(속도 +10%, 체력 −10%) · 5 느긋함(체력 +10%, 속도 −10%)</td><td>1</td></tr>
@@ -120,13 +120,13 @@
   <section id="tab-about" class="tab-panel document" hidden>
     <div class="doc-heading"><div class="eyebrow">WHAT IS NEW, WHAT IS BORROWED</div><h2>구조만 참고하고, 그림·지도·글·코드는 새로 만들었다.</h2><p>동현몬은 게임보이용 「포켓몬스터 피카츄」(1998)의 큰 틀(마을과 풀숲을 오가며 괴물을 만나고, 턴제로 싸우고, 공으로 잡아 모으고, 체육관에 도전하며, 첫 동반자가 뒤를 따라다니는 구성)을 참고한 팬 실험이다.</p></div>
     <div class="science-block"><span class="index">01</span><div><h3>원작의 그림·소리·지도·글·이름은 담지 않았다.</h3><p>원작의 그래픽, 음악·효과음, 지도 배치, 대사, 괴물의 이름과 모습은 하나도 쓰지 않는다. 화면의 모든 도트 그림과 지도, 대사, 기술 이름, 효과음은 동현몬 코드로 새로 만들었다. 전투 공식은 널리 알려진 턴제 RPG의 일반적인 형태(레벨·공격·방어·속성 배율)를 단순화해 새로 적었다.</p></div></div>
-    <div class="science-block"><span class="index">02</span><div><h3>등장하는 동현몬은 모두 실험실 식구다.</h3><p>포동이(실험실의 강아지)를 비롯해 동현파의 라이언·슈슈, 동현초의 초파리, 동현빌의 꼬마선충, 동현전의 보병·전차·전투기, 동현워의 창병·궁수·기사, 동현콥의 꼬리콥터, 동현둠의 둠가이가 동현몬으로 나온다.</p></div></div>
+    <div class="science-block"><span class="index">02</span><div><h3>등장하는 동현몬은 모두 실험실 식구다.</h3><p>포동이(실험실의 강아지)를 비롯해 동현파의 라이언·슈슈, 동현초의 초파리, 동현빌의 예쁜꼬마선충, 동현전의 보병·전차·전투기, 동현워의 창병·궁수·기사, 동현콥의 꼬리콥터, 동현둠의 둠가이가 동현몬으로 나온다.</p></div></div>
     <div class="science-block"><span class="index">03</span><div><h3>상표와 관계</h3><p>포켓몬스터(Pokémon)는 닌텐도·크리처스·게임프리크의 상표이자 저작물이다. 동현몬은 이들과 관계가 없고, 승인이나 후원을 받지 않았다.</p></div></div>
     <div class="science-block"><span class="index">04</span><div><h3>코드와 글꼴의 이용 조건</h3><p>동현몬 코드는 MIT, 글꼴(검은고딕 Black Han Sans · Pretendard · 나눔고딕코딩)은 SIL Open Font License를 따른다. 동현랭 실행기는 동현랭 저장소의 MIT 코드를 그대로 쓴다. 포동이의 모습과 이름에 대한 권리는 코드 라이선스와 별개로 만든 사람에게 있다.</p></div></div>
     <aside class="maker-note"><span class="eyebrow">만든 사람</span><p>인하대학교 의과대학 김동현 교수는 백신학·감염학을 연구한다. 동현몬은 동현랭 시리즈의 열 번째 프로젝트이다.</p></aside>
   </section>
 </main>
-<footer><span>동현몬 v0.07 · 인하대학교 의과대학 교수 김동현</span><span>1인용 · 동현몬스터 화이트 · 배지 1개</span><span><a href="https://raspberry-kim.github.io/donghyun-lang/" target="_blank" rel="noopener">동현랭</a> · <a href="https://github.com/Raspberry-Kim/donghyun-lang" target="_blank" rel="noopener">동현랭 GitHub</a> · <a href="https://github.com/Raspberry-Kim/donghyun-lab10" target="_blank" rel="noopener">동현몬 GitHub</a></span></footer>
+<footer><span>동현몬 v0.08 · 인하대학교 의과대학 교수 김동현</span><span>1인용 · 동현몬스터 화이트 · 배지 1개</span><span><a href="https://raspberry-kim.github.io/donghyun-lang/" target="_blank" rel="noopener">동현랭</a> · <a href="https://github.com/Raspberry-Kim/donghyun-lang" target="_blank" rel="noopener">동현랭 GitHub</a> · <a href="https://github.com/Raspberry-Kim/donghyun-lab10" target="_blank" rel="noopener">동현몬 GitHub</a></span></footer>
 <script src="./game.js"></script>
 <script>
 /* 입력 표식 풍선 도움말 */

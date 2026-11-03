@@ -58,13 +58,13 @@ function drawDialog(g,S){ const d=S.dialog; if(!d||d.wait) return;
 /* ---------- 전투 ---------- */
 function drawBattle(g,S){ const B=S.battle, me=S.party[B.me], f=B.foes[B.fi], fr=S.frame;
   g.fillStyle='#eef3e6'; g.fillRect(0,0,W,H);
-  g.fillStyle='#d8e6c4'; g.beginPath(); g.ellipse(236,78,52,12,0,0,Math.PI*2); g.fill(); g.beginPath(); g.ellipse(76,140,56,12,0,0,Math.PI*2); g.fill();
+  g.fillStyle='#d8e6c4'; g.beginPath(); g.ellipse(236,76,44,9,0,0,Math.PI*2); g.fill(); g.beginPath(); g.ellipse(76,136,70,14,0,0,Math.PI*2); g.fill();
   const sx=B.shake>0?Math.round(Math.sin(fr*1.7)*3):0;
   // 상대
   const vis=(m,fl)=>(m.hp>0||(B.cur&&B.cur.t==='hp'))&&!(fl>0&&(fr>>1)%2===0);
   if(vis(f,B.flash.foe)) sprScaled(g,'m_'+f.key,212+sx,30,2,false);
   // 나
-  if(vis(me,B.flash.me)) sprScaled(g,'m_'+me.key,52-sx,90,2,true);
+  if(vis(me,B.flash.me)) sprScaled(g,'m_'+me.key,40-sx,70,3,true);
   // 상대 정보
   box(g,6,8,124,34); text(g,E.name(f),12,11,'#2e2a38',true); text(g,'Lv'+f.lv,96,11); bar(g,30,30,92,5,f.hp/f.maxhp,hpCol(f.hp/f.maxhp)); text(g,'HP',12,26,'#8a4a2a',true);
   if(S.dex.caught[f.key]&&B.kind==='wild') spr(g,'ball',114,8);
