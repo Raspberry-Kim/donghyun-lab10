@@ -17,10 +17,27 @@ function camera(S){ const m=MAPS[S.map], mw=m.grid[0].length*T, mh=m.grid.length
   if(mw<=W) cx=Math.round((mw-W)/2); else cx=Math.max(0,Math.min(mw-W,Math.round(h.x+T/2-W/2)));
   if(mh<=H) cy=Math.round((mh-H)/2); else cy=Math.max(0,Math.min(mh-H,Math.round(h.y+T/2-H/2)));
   S.cam.x=cx; S.cam.y=cy; return [cx,cy]; }
+/* 건물 입체감(동현워 건물을 따른다): 지붕·벽의 바깥 모서리에 테두리, 벽 오른쪽에 그늘 기둥, 건물 아래 땅에 그림자. 이웃 칸을 보고 그리므로 지도 글자는 그대로다. */
+const ROOF='RCLG', WALL='HWD';
+function at(m,x,y){ const r=m.grid[y]; return r?(r[x]||' '):' '; }
+function building(g,m,tx,ty,ch,px,py){
+  const INK='#2e2a38';
+  if(ROOF.includes(ch)){
+    g.fillStyle=INK; if(!ROOF.includes(at(m,tx-1,ty))) g.fillRect(px,py,1,T); if(!ROOF.includes(at(m,tx+1,ty))) g.fillRect(px+T-1,py,1,T);
+    if(!ROOF.includes(at(m,tx+1,ty))){ g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(px+T-3,py+2,2,T-4); }
+  } else if(WALL.includes(ch)){
+    const rightOpen=!WALL.includes(at(m,tx+1,ty)), leftOpen=!WALL.includes(at(m,tx-1,ty));
+    if(rightOpen){ g.fillStyle='rgba(0,0,0,.14)'; g.fillRect(px+T-3,py+1,2,T-2); }
+    g.fillStyle=INK; if(leftOpen) g.fillRect(px,py,1,T); if(rightOpen) g.fillRect(px+T-1,py,1,T);
+  } else if(WALL.includes(at(m,tx,ty-1))){
+    // 건물 바로 아래 땅: 오른쪽으로 살짝 치우친 그림자
+    g.fillStyle='rgba(30,25,20,.22)'; g.fillRect(px+1,py,T-1,3); g.fillRect(px+3,py+3,T-3,1);
+  }
+}
 function drawWorld(g,S){ const m=MAPS[S.map], [cx,cy]=camera(S);
   g.fillStyle='#1a1826'; g.fillRect(0,0,W,H);
   const x0=Math.max(0,Math.floor(cx/T)), y0=Math.max(0,Math.floor(cy/T)), x1=Math.min(m.grid[0].length-1,Math.floor((cx+W)/T)), y1=Math.min(m.grid.length-1,Math.floor((cy+H)/T));
-  for(let ty=y0;ty<=y1;ty++) for(let tx=x0;tx<=x1;tx++){ const ch=m.grid[ty][tx]; const k='t_'+ch; spr(g,SP.has(k)?k:'t_.',tx*T-cx,ty*T-cy); }
+  for(let ty=y0;ty<=y1;ty++) for(let tx=x0;tx<=x1;tx++){ const ch=m.grid[ty][tx]; const k='t_'+ch; spr(g,SP.has(k)?k:'t_.',tx*T-cx,ty*T-cy); building(g,m,tx,ty,ch,tx*T-cx,ty*T-cy); }
   for(const it of (m.items||[])){ if(S.picked[S.map+':'+it.x+':'+it.y]) continue; spr(g,'ball',it.x*T-cx,it.y*T-cy); }
   const ents=[]; for(const n of S.npcs) if(n.map===S.map) ents.push({e:n,key:entKey(n.spr,n,true),bang:n.bang});
   if(!S.petHidden) ents.push({e:S.pet,key:entKey('pet',S.pet,true)});

@@ -8,7 +8,7 @@ PAL={
  '1':'#8fd16a','2':'#5faa4b','3':'#e2c88f','4':'#c9ab6d','5':'#3f8a3a','6':'#58a84a','7':'#5fa8e0','8':'#b5dcf2','9':'#c9b8a0',
  # 건물·실내
  'M':'#e5483a','d':'#9a2620','B':'#3b63b5','b':'#24417a','I':'#8d919c','i':'#c7c9d1','O':'#d98a3c','o':'#8a5a2b','n':'#f3e6c8','h':'#6b4a2e',
- 'c':'#8c7a63','u':'#e8dcc4','v':'#dccfb4','x':'#c76b5c','z':'#e9a08f','t':'#7a4a22','T':'#b07a3e','a':'#9a978c','A':'#5d5b53',
+ 'c':'#8c7a63','Q':'#f0b56a','U':'#7f9fe0','u':'#e8dcc4','v':'#dccfb4','x':'#c76b5c','z':'#e9a08f','t':'#7a4a22','T':'#b07a3e','a':'#9a978c','A':'#5d5b53',
  # 사람·동현몬
  's':'#efc7a6','S':'#d9a785','y':'#edc776','N':'#b9b9b9','j':'#8a62b8','p':'#f0a3a3','P':'#d97b86','m':'#87546a','w':'#f6f2e8','Y':'#f2b705','k':'#231d18','g':'#6fb04a','L':'#ff9f86','q':'#ef9a8b','r':'#cf6157','e':'#49392f','D':'#d48a78','H':'#4b382e','C':'#2bb0c8','l':'#f59a9a'
 }
@@ -59,16 +59,18 @@ g=tile_fill('1'); blob(g,['.q.','qYq','.q.'],2,2); blob(g,['.l.','lYl','.l.'],9,
 g=tile_fill('1'); rect(g,3,3,10,8,'T'); rect(g,4,4,8,6,'n'); rect(g,5,6,6,1,'h'); rect(g,5,8,4,1,'h'); rect(g,7,11,2,4,'t'); add('t_s',g)  # 표지판
 g=tile_fill('1'); disc(g,8,9,6,'A'); disc(g,7,8,4,'a'); add('t_#',g)                                   # 바위
 # 지붕·벽·문
-def roof(c1,c2):
-    g=tile_fill(c1)
-    for y in range(0,16,4): rect(g,0,y,16,1,c2)
-    for y in range(2,16,4):
+def roof(c1,c2,c3):
+    # 위 테두리 → 밝은 줄 → 기와 → 처마 밝은 띠 → 그늘 → 아래 테두리 (동현워 건물의 지붕·처마 띠를 따른다)
+    g=tile_fill(c1); rect(g,0,0,16,1,'K'); rect(g,0,1,16,1,c3)
+    for y in range(4,13,4): rect(g,0,y,16,1,c2)
+    for y in range(2,13,4):
         for x in range(0,16,4): put(g,x,y,c2); put(g,x+1,y,c2)
+    rect(g,0,13,16,1,c3); rect(g,0,14,16,1,c2); rect(g,0,15,16,1,'K')
     return g
-add('t_R',roof('O','o')); add('t_C',roof('M','d')); add('t_L',roof('i','I')); add('t_G',roof('B','b'))
-g=tile_fill('n'); rect(g,0,0,16,1,'c'); rect(g,4,4,8,7,'8'); rect(g,4,4,8,1,'h'); rect(g,4,10,8,1,'h'); rect(g,4,4,1,7,'h'); rect(g,11,4,1,7,'h'); rect(g,7,4,1,7,'h'); add('t_H',g)   # 벽+창
-g=tile_fill('i'); rect(g,0,0,16,1,'I'); rect(g,4,4,8,7,'8'); rect(g,4,4,8,1,'A'); rect(g,4,10,8,1,'A'); rect(g,4,4,1,7,'A'); rect(g,11,4,1,7,'A'); add('t_W',g)
-g=tile_fill('n'); rect(g,0,0,16,1,'c'); rect(g,3,2,10,14,'h'); rect(g,4,3,8,13,'t'); put(g,10,9,'Y'); add('t_D',g)   # 문
+add('t_R',roof('O','o','Q')); add('t_C',roof('M','d','l')); add('t_L',roof('i','I','w')); add('t_G',roof('B','b','U'))
+g=tile_fill('n'); rect(g,0,0,16,1,'c'); rect(g,4,4,8,7,'8'); rect(g,4,4,8,1,'h'); rect(g,4,10,8,1,'h'); rect(g,4,4,1,7,'h'); rect(g,11,4,1,7,'h'); rect(g,7,4,1,7,'h'); rect(g,5,5,2,2,'E'); rect(g,4,11,8,1,'c'); rect(g,0,15,16,1,'K'); add('t_H',g)   # 벽+창(창턱·유리 반사·아래 테두리)
+g=tile_fill('i'); rect(g,0,0,16,1,'I'); rect(g,4,4,8,7,'8'); rect(g,4,4,8,1,'A'); rect(g,4,10,8,1,'A'); rect(g,4,4,1,7,'A'); rect(g,11,4,1,7,'A'); rect(g,5,5,2,2,'E'); rect(g,4,11,8,1,'I'); rect(g,0,15,16,1,'K'); add('t_W',g)
+g=tile_fill('n'); rect(g,0,0,16,1,'c'); rect(g,3,2,10,14,'h'); rect(g,4,3,8,13,'t'); put(g,10,9,'Y'); rect(g,0,15,3,1,'K'); rect(g,13,15,3,1,'K'); add('t_D',g)   # 문(문턱은 길로 열린다)
 # 실내
 g=tile_fill('9'); rect(g,0,0,16,4,'c'); rect(g,0,13,16,3,'c'); add('t_=',g)
 add('t__',tile_fill('u',[(0,0),(8,8),(1,9),(9,1)],'v'))
@@ -152,17 +154,18 @@ for k,v in PEOPLE.items():
     for view,g in v.items(): add(f'{k}_{view}',g)
 
 # ---------- 포동이 16×16 (뒤따르기) ----------
+# 앞·뒤: 동현크의 둥근 머리를 따르고, 원본 포동이처럼 귀가 머리 양옆으로 늘어진다(말티즈). 눈 2×2에 흰 점, 코 2×2.
 pet_down=[
-"................",
-"....KKKKKKKK....",
-"..KKWWWWWWWWKK..",
+".....KKKKKK.....",
+"...KKWWWWWWKK...",
+"..KWWWWWWWWWWK..",
 ".KWWWWWWWWWWWWK.",
-".KWWKKWWWWKKWWK.",
-".KWWKEWWWWKEWWK.",
-".KWWWWWKKWWWWWK.",
-".KWWWWWKKWWWWWK.",
-"..KKWWWWWWWWKK..",
-"..KRRWWWWWWRRK..",
+"KWWWEKWWWWEKWWWK",
+"KWWWKKWWWWKKWWWK",
+"KWWKWWWKKWWWKWWK",
+"KWWKWWWKKWWWKWWK",
+"KWWKKWWWWWWKKWWK",
+".KKKRRRRRRRRKKK.",
 "..KWWWWWWWWWWK..",
 "..KWWWWWWWWWWK..",
 "..KWWKWWWWKWWK..",
@@ -170,18 +173,18 @@ pet_down=[
 "..KKKK....KKKK..",
 "................"]
 pet_up=[
-"................",
-"....KKKKKKKK....",
-"..KKWWWWWWWWKK..",
+".....KKKKKK.....",
+"...KKWWWWWWKK...",
+"..KWWWWWWWWWWK..",
 ".KWWWWWWWWWWWWK.",
-".KWWWWWWWWWWWWK.",
-".KWWWWWWWWWWWWK.",
-".KWWWWWWWWWWWWK.",
-".KWWWWWWWWWWWWK.",
-"..KKWWWWWWWWKK..",
+"KWWWWWWWWWWWWWWK",
+"KWWWWWWWWWWWWWWK",
+"KWWKWWWWWWWWKWWK",
+"KWWKWWWWWWWWKWWK",
+"KWWKKWWWWWWKKWWK",
+".KKKWWWWWWWWKKK.",
 "..KWWWWWWWWWWKK.",
-"..KWWWWWWWWWWWK.",
-"..KWWWWWWWWWWWK.",
+"..KWWWWWWWWWWWWK",
 "..KWWKWWWWKWWKK.",
 "..KGGK.GG.KGGK..",
 "..KKKK....KKKK..",
@@ -211,9 +214,42 @@ pet_left2=pet_left[:10]+[
 "...KKKK.KKKK....",
 "................",
 "................"]
-add('pet_down',[r for r in pet_down]); add('pet_up',pet_up); add('pet_left',pet_left); add('pet_left2',pet_left2)
-pd2=[r for r in pet_down]; pd2[13]="..KGGK.GG.KGGK..".replace("GG.KGG","GGKGG."); pd2[12]="..KWWKWWWWKWWK.."; add('pet_down2',pd2)
-pu2=[r for r in pet_up]; add('pet_up2',pu2)
+add('pet_down',pet_down); add('pet_up',pet_up); add('pet_left',pet_left); add('pet_left2',pet_left2)
+pet_down2=[
+".....KKKKKK.....",
+"...KKWWWWWWKK...",
+"..KWWWWWWWWWWK..",
+".KWWWWWWWWWWWWK.",
+"KWWWEKWWWWEKWWWK",
+"KWWWKKWWWWKKWWWK",
+"KWWKWWWKKWWWKWWK",
+"KWWKWWWKKWWWKWWK",
+"KWWKKWWWWWWKKWWK",
+".KKKRRRRRRRRKKK.",
+"..KWWWWWWWWWWK..",
+"..KWWWWWWWWWWK..",
+"..KWWKWWWWKWWK..",
+"..KGGKGG..KGGK..",
+"..KKKK....KKKK..",
+"................"]
+pet_up2=[
+".....KKKKKK.....",
+"...KKWWWWWWKK...",
+"..KWWWWWWWWWWK..",
+".KWWWWWWWWWWWWK.",
+"KWWWWWWWWWWWWWWK",
+"KWWWWWWWWWWWWWWK",
+"KWWKWWWWWWWWKWWK",
+"KWWKWWWWWWWWKWWK",
+"KWWKKWWWWWWKKWWK",
+".KKKWWWWWWWWKKK.",
+"..KWWWWWWWWWWKK.",
+"..KWWWWWWWWWWWWK",
+"..KWWKWWWWKWWKK.",
+"..KGGK..GGKGGK..",
+"..KKKK....KKKK..",
+"................"]
+add('pet_down2',pet_down2); add('pet_up2',pet_up2)
 
 # ---------- 동현몬 24×24 ----------
 MON={}
