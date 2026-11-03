@@ -130,6 +130,8 @@ def human(hair,shirt,pants,skin='s',hat=None,hair_long=False,glasses=False,coat=
         else:
             rect(w,5,15,2,1,'.'); rect(w,5,14,2,1,'K'); rect(w,9,14,2,1,pants)
         out[view+'2']=outline(w)
+    # 옆모습은 눈이 왼쪽에 오도록 좌우를 뒤집는다(걷는 방향과 얼굴 방향이 맞게). render는 오른쪽을 볼 때 이 그림을 다시 뒤집는다
+    for k in ('left','left2'): out[k]=[r[::-1] for r in out[k]]
     return out
 def net(g,view):
     if view=='left': rect(g,2,4,1,10,'T'); rect(g,0,2,4,3,'i'); put(g,1,3,'E')

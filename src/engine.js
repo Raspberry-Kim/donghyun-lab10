@@ -112,6 +112,13 @@ function dialogTick(S,keys){
   if(d.n<page.length){ d.n+=1; if(d.n%3===0&&d.n<page.length) S.events.push({t:'blip'}); if(keys.aPressed||keys.bPressed) d.n=page.length; return; }
   if(keys.aPressed||keys.bPressed){ if(d.i+1<d.pages.length){ d.i++; d.n=0; } else { const f=d.onDone; S.dialog=null; S.mode='world'; if(f) f(); } }
 }
+/* 책장 글: 지도별. 연구소는 왼쪽(x<6)·오른쪽 책장이 다르다 */
+const BOOKS={
+  home:['책장: 『포동이 산책 일지』 『백신학 개론』\n『소아감염학』이 꽂혀 있다.\n『예방접종 지침』 사이에 포동이 사진이 끼워져 있다.'],
+  lab:['책장: 『동현랭 입문』 『도옹 세는 법』\n『신중동과 뭉치: 0과 음수의 조건문』\n『뚱띠와 또치: 몫과 나머지』가 꽂혀 있다.','책장: 『예방접종 지침』 『역학조사 수첩』\n『소아감염학』 『동현몬 도감 초안』이\n꽂혀 있다. 책갈피가 백신 장에 있다.'],
+  houseA:['책장: 『강아지 기르기』 『하얀 털 손질법』\n『백신학 개론』이 꽂혀 있다.\n강아지도 예방접종은 챙기는 집이다.'],
+  houseB:['책장: 『동현전 전차 도감』 『동현워 기사 열전』\n『꽥꽥: 값을 받는 법』 『오겡끼데스까: 멈추는 법』\n동현랭 책이 많다.'],
+};
 function faceTile(S){ const h=S.hero, [dx,dy]=DIRS[h.dir]; return [h.tx+dx,h.ty+dy,dx,dy]; }
 function interact(S){
   const [tx,ty,dx,dy]=faceTile(S), m=map(S);
@@ -123,7 +130,7 @@ function interact(S){
   const it=(m.items||[]).find(i=>i.x===tx&&i.y===ty&&!S.picked[S.map+':'+i.x+':'+i.y]);
   if(it){ S.picked[S.map+':'+it.x+':'+it.y]=1; S.bag[it.item]=(S.bag[it.item]||0)+it.n; S.events.push({t:'item'}); say(S,[`${ITEMS[it.item].name}${it.n>1?' '+it.n+'개':''}를 주웠다!`]); return; }
   if(t==='B') say(S,['기계가 윙 소리를 내며 돌아간다.']);
-  else if(t==='b') say(S,['책장: 『동현랭 입문』 『포동이 산책 일지』\n『백신학 개론』이 꽂혀 있다.']);
+  else if(t==='b'){ const bs=BOOKS[S.map]||BOOKS.home; say(S,[bs[Math.min(bs.length-1,tx>=6?1:0)]]); }
 }
 function talk(S,n){
   if(n.trainer){ if(n.beaten) say(S,n.after); else engage(S,n); return; }
