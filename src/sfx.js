@@ -67,6 +67,7 @@ var DHSFX=function(storeKey){ /* 동현워의 합성 효과음에 동현크·동
         o.connect(lp); lp.connect(g); g.connect(b); o.start(u2); o.stop(u2+0.9); lfo.start(u2); lfo.stop(u2+0.9); } },
     alert:function(t){ tone(t,'triangle',330,0.18,0.35); tone(t+0.2,'triangle',247,0.3,0.35); },
     bell:function(t,f,dur,peak){ tone(t,'sine',f,dur,peak,0.005); tone(t,'sine',f*2,dur*0.5,peak*0.3,0.005); tone(t,'sine',f*3.01,dur*0.25,peak*0.12,0.005); },
+    coin:function(t){ S.bell(t,1046.5,0.18,0.3); S.bell(t+0.09,1568,0.3,0.3); },
     win:function(t){ S.bell(t,523.25,0.5,0.5); S.bell(t+0.28,659.25,0.5,0.5); S.bell(t+0.56,783.99,1.2,0.55); },
     lose:function(t){ S.bell(t,196,1.3,0.55); tone(t,'sine',196*2.76,0.5,0.08,0.005); },
     /* 공격·반격·격파 */

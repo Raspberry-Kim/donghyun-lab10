@@ -135,10 +135,11 @@ requestAnimationFrame(frame);
 function drawPauseDim(){ g.fillStyle='rgba(0,0,0,.35)'; g.fillRect(0,0,canvas.width,canvas.height); }
 
 /* ---------- 사건 → 소리·기록 ---------- */
-const SNDMAP={step:'foot',bump:'thud',door:'swap',tick:'tick',pop:'pop',item:'sparkle',heal:'heartup',buy:'bell',encounter:'alert',hit:'hurt',stat:'ping',faint:'fall',levelup:'heartup',shake:'thud',caught:'sparkle',money:'bell',win:'win'};
+const SNDMAP={step:'foot',bump:'thud',door:'swap',tick:'tick',pop:'pop',item:'sparkle',heal:'heartup',buy:'coin',encounter:'alert',hit:'hurt',stat:'ping',faint:'fall',levelup:'heartup',shake:'thud',caught:'sparkle',money:'coin',win:'win'};
 function events(){
-  for(const ev of S.events){
-    if(SNDMAP[ev.t]) SND.play(SNDMAP[ev.t]);
+  const evs=S.events.splice(0); /* 먼저 비운다: 처리 중 오류가 나도 같은 사건이 매 틀 되풀이되지 않게 */
+  for(const ev of evs){
+    if(SNDMAP[ev.t]){ try{ SND.play(SNDMAP[ev.t]); }catch(e){ console.error('소리 오류',ev.t,e); } }
     if(ev.t==='encounter'){ const B=S.battle; log(B.kind==='wild'?`야생 ${E.name(B.foes[0])} Lv${B.foes[0].lv} 등장.`:`${B.npc.trainer.name}과(와) 승부.`); }
     if(ev.t==='caught') log(`${E.name(S.battle.foes[S.battle.fi])}을(를) 잡았다. 도감 ${Object.keys(S.dex.caught).length}종.`);
     if(ev.t==='levelup') log(`${E.name(S.party[S.battle?S.battle.me:0])} Lv${S.party[S.battle?S.battle.me:0].lv}.`);
@@ -147,7 +148,7 @@ function events(){
     if(ev.t==='item'&&S.dialog) log(S.dialog.pages[0].replace(/\n/g,' '));
     if(ev.t==='win') log('체육관 배지를 얻었다. 동현몬스터 화이트, 승리.');
   }
-  S.events.length=0; hud();
+  hud();
 }
 function log(html){ const li=document.createElement('li'); li.innerHTML=esc(E.josa(html)); const l=$('#log'); l.prepend(li); while(l.children.length>40) l.lastChild.remove(); }
 const hpCls=r=>r>0.5?'ok':r>0.2?'mid':'low';
