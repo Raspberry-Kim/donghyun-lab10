@@ -224,8 +224,8 @@ function battleTick(S,keys){
     return; }
   if(B.phase==='keep'){ const n=S.party.length, f=B.keep; /* 여섯이 찼을 때 잡은 동현몬: 누구를 상자에 맡길지 고른다. Z면 새 동현몬을 맡긴다 */
     if(keys.upPressed){ B.pcur=(B.pcur-1+n)%n; S.events.push({t:'tick'}); } if(keys.downPressed){ B.pcur=(B.pcur+1)%n; S.events.push({t:'tick'}); }
-    if(keys.bPressed){ B.keep=null; B.phase='q'; deposit(S,f); B.q.unshift({t:'msg',text:`${name(f)}은(는) 연구소 상자로 보내졌다.`}); return; }
-    if(keys.aPressed){ const out=S.party[B.pcur]; B.keep=null; B.phase='q'; S.party[B.pcur]=f; deposit(S,out); S.events.push({t:'pop'}); B.q.unshift({t:'msg',text:`${name(out)}을(를) 상자에 맡기고\n${name(f)}이(가) 함께 가게 되었다.`}); return; }
+    if(keys.bPressed){ B.keep=null; B.phase='q'; B.q.unshift({t:'msg',text:`${name(f)}은(는) 연구소 상자로 보내졌다.`},{t:'fn',fn:()=>deposit(S,f)}); return; } /* 맡기기는 안내문 뒤에: 안내문 중에 상대 체력 막대가 차오르지 않게 */
+    if(keys.aPressed){ const out=S.party[B.pcur], i=B.pcur; B.keep=null; B.phase='q'; S.events.push({t:'pop'}); B.q.unshift({t:'msg',text:`${name(out)}을(를) 상자에 맡기고\n${name(f)}이(가) 함께 가게 되었다.`},{t:'fn',fn:()=>{ S.party[i]=f; deposit(S,out); }}); return; } /* 교체는 안내문 뒤에: 싸우던 동현몬을 바꿀 때 안내문 중 내 쪽 그림이 먼저 바뀌지 않게 */
     return; }
   if(B.phase==='party'){ const n=S.party.length;
     if(keys.upPressed){ B.pcur=(B.pcur-1+n)%n; S.events.push({t:'tick'}); } if(keys.downPressed){ B.pcur=(B.pcur+1)%n; S.events.push({t:'tick'}); }
