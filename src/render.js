@@ -80,11 +80,12 @@ function drawBattle(g,S){ const B=S.battle, me=S.party[B.me], f=B.foes[B.fi], fr
   else if(B.phase==='bag'){ const list=['ball','potion','superpotion'].filter(k=>S.bag[k]>0); if(!list.length) text(g,'가방이 비었다.',24,H-44);
     list.forEach((k,i)=>{ text(g,`${ITEMS[k].name} ×${S.bag[k]}`,24,H-45+i*11); if(B.bcur===i) text(g,'▶',10,H-45+i*11); }); text(g,'Z 돌아가기',240,H-16,'#5a5262'); }
   else { const lines=wrap(g,B.text.slice(0,B.n),W-28); lines.slice(0,3).forEach((l,i)=>text(g,l,12,H-44+i*13)); }
+  if(B.phase==='keep'&&B.keep) drawParty(g,S,B.pcur,E.josa(`${E.name(B.keep)}과(와) 누구를 바꿀까?`),'Z: 새 동현몬을 맡긴다');
   if(B.phase==='party') drawParty(g,S,B.pcur,B.forced?'싸울 동현몬을 고르자':'교대할 동현몬 (Z 돌아가기)',B.text&&B.phase==='party'&&B.text.includes('!')?B.text:null);
 }
 function drawParty(g,S,cur,title,note){ g.fillStyle='rgba(20,18,30,0.55)'; g.fillRect(0,0,W,H); box(g,14,10,W-28,H-20); text(g,title,24,15,'#2e2a38',true);
   S.party.forEach((m,i)=>{ const y=32+i*24; if(i===cur) text(g,'▶',20,y+4); sprScaled(g,'m_'+m.key,32,y-2,1,false); text(g,E.name(m),62,y,m.hp>0?'#2e2a38':'#9a3a3a',true); text(g,'Lv'+m.lv,150,y); bar(g,190,y+4,90,4,m.hp/m.maxhp,hpCol(m.hp/m.maxhp)); text(g,`${m.hp}/${m.maxhp}`,190,y+10,'#5a5262'); });
-  if(note) text(g,note,24,H-26,'#9a3a3a'); }
+  if(note){ if(S.party.length>=6){ g.font=FONT; text(g,note,W-28-g.measureText(note).width,16,'#9a3a3a'); } else text(g,note,24,H-26,'#9a3a3a'); } } /* 여섯이 다 찼으면 안내를 제목 줄 오른쪽에 둔다(여섯째 줄과 겹치지 않게) */
 /* ---------- 전체 ---------- */
 function draw(g,S){ g.imageSmoothingEnabled=false;
   if(S.battle) drawBattle(g,S); else { drawWorld(g,S); drawDialog(g,S); }

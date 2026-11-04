@@ -134,9 +134,9 @@ function interact(S){
 }
 function talk(S,n){
   if(n.trainer){ if(n.beaten) say(S,n.after); else engage(S,n); return; }
-  if(n.heal){ say(S,n.text,()=>choice(S,['네, 부탁해요','아니요'],i=>{ if(i===0){ healParty(S); S.lastHeal={map:S.backDoor?S.backDoor.map:S.map,x:S.hero.tx,y:S.hero.ty,dir:'down'}; if(S.backDoor) S.lastHeal={...S.backDoor}; S.events.push({t:'heal'}); say(S,['동현몬이 모두 건강해졌어요.\n또 오세요!']); } else say(S,['또 오세요!']); })); return; }
+  if(n.heal){ const its=n.box?['네, 부탁해요','상자를 연다','아니요']:['네, 부탁해요','아니요']; say(S,n.text,()=>choice(S,its,i=>{ if(n.box&&i===1){ boxMenu(S); return; } if(i===0){ healParty(S); S.lastHeal={map:S.backDoor?S.backDoor.map:S.map,x:S.hero.tx,y:S.hero.ty,dir:'down'}; if(S.backDoor) S.lastHeal={...S.backDoor}; S.events.push({t:'heal'}); say(S,['동현몬이 모두 건강해졌어요.\n또 오세요!']); } else say(S,['또 오세요!']); })); return; }
   if(n.shop){ say(S,n.text,()=>shopMenu(S,n)); return; }
-  if(n.gift){ const k='gift:'+n.id; if(!S.flags[k]){ say(S,n.text,()=>{ S.flags[k]=1; S.bag[n.gift.item]=(S.bag[n.gift.item]||0)+n.gift.n; S.events.push({t:'item'}); say(S,[`${ITEMS[n.gift.item].name} ${n.gift.n}개를 받았다!`].concat(n.after||[])); }); } else say(S,n.after); return; }
+  if(n.gift){ const k='gift:'+n.id; if(!S.flags[k]){ say(S,n.text,()=>{ S.flags[k]=1; S.bag[n.gift.item]=(S.bag[n.gift.item]||0)+n.gift.n; S.events.push({t:'item'}); say(S,[`${ITEMS[n.gift.item].name} ${n.gift.n}개를 받았다!`].concat(n.after||[])); }); } else if(n.box) say(S,n.after,()=>choice(S,['상자를 연다','그만둔다'],i=>{ if(i===0) boxMenu(S); })); else say(S,n.after); return; }
   say(S,n.text);
 }
 function shopMenu(S,n){
@@ -147,6 +147,26 @@ function shopMenu(S,n){
   S.dialog.opt={shop:true};
 }
 function healParty(S){ for(const m of S.party){ m.hp=m.maxhp; m.st={atk:0,def:0,spd:0}; } }
+/* 연구소 상자: 맡긴 동현몬은 쉬면서 체력이 가득 찬다. 회복소·연구소에서 열어 데리고 있는 동현몬과 바꾼다 */
+function deposit(S,m){ m.hp=m.maxhp; m.st={atk:0,def:0,spd:0}; S.box.push(m); }
+const monLabel=m=>`${name(m)} Lv${m.lv}`;
+const BOX_PAGE=5;
+function boxMenu(S,page){
+  page=page||0; const n=S.box.length;
+  if(!n){ say(S,['상자는 비어 있다.']); return; }
+  if(page*BOX_PAGE>=n) page=0;
+  const slice=S.box.slice(page*BOX_PAGE,page*BOX_PAGE+BOX_PAGE), more=(page+1)*BOX_PAGE<n;
+  const items=slice.map(monLabel); if(more) items.push('다음 쪽 ▶'); items.push('그만둔다');
+  choice(S,items,(i)=>{ if(i<0||i>=items.length-1) return; if(more&&i===items.length-2){ boxMenu(S,page+1); return; } pickPartyFor(S,page*BOX_PAGE+i,page); },0);
+  S.dialog.opt={box:true};
+}
+function pickPartyFor(S,bi,page){
+  const b=S.box[bi]; if(!b){ boxMenu(S); return; }
+  const items=S.party.map(monLabel).concat(['그만둔다']);
+  say(S,[`${name(b)}과(와) 누구를 바꿀까?`],()=>choice(S,items,(i)=>{ if(i<0||i>=S.party.length){ boxMenu(S,page); return; }
+    const out=S.party[i]; S.party[i]=b; S.box.splice(bi,1); deposit(S,out); S.events.push({t:'pop'});
+    say(S,[`${name(out)}을(를) 상자에 맡기고\n${name(b)}을(를) 데려왔다.`],()=>boxMenu(S,page)); },0));
+}
 function engage(S,n){ n.bang=30; S.hero.moving=0; const dist=Math.abs(n.tx-S.hero.tx)+Math.abs(n.ty-S.hero.ty);
   const go=()=>say(S,n.text,()=>startBattle(S,{kind:'trainer',npc:n,foes:n.trainer.party.map(([k,l])=>makeMon(k,l))}));
   if(dist>1){ /* 트레이너가 다가온다 */ n.walk=dist-1; n.walkDir=n.dir; S.dialog={pages:[],i:0,n:0,wait:true}; S.mode='dialog'; S.approach={n,go}; }
@@ -176,6 +196,7 @@ function battleTick(S,keys){
       if(B.cur.t==='fn'){ const f=B.cur.fn; B.cur=null; f(); return; }
       if(B.cur.t==='menu'){ B.phase='menu'; B.cur=null; B.text=josa(`${name(mine(S,B))}은(는) 무엇을 할까?`); B.n=B.text.length; return; }
       if(B.cur.t==='party'){ B.phase='party'; B.forced=B.cur.forced; B.pcur=0; B.cur=null; return; }
+      if(B.cur.t==='keep'){ B.phase='keep'; B.keep=B.cur.mon; B.pcur=0; B.cur=null; return; }
       if(B.cur.t==='end'){ const r=B.cur; B.cur=null; endBattle(S,r); return; }
       if(B.cur.t==='msg'){ B.text=josa(B.cur.text); }
     }
@@ -200,6 +221,11 @@ function battleTick(S,keys){
     if(keys.upPressed){ B.bcur=(B.bcur-1+list.length)%list.length; S.events.push({t:'tick'}); } if(keys.downPressed){ B.bcur=(B.bcur+1)%list.length; S.events.push({t:'tick'}); }
     if(keys.bPressed){ B.phase='menu'; return; }
     if(keys.aPressed){ const it=list[B.bcur]; if(!it){ B.phase='menu'; return; } S.events.push({t:'pop'}); B.phase='q'; turn(S,B,{type:'item',key:it}); }
+    return; }
+  if(B.phase==='keep'){ const n=S.party.length, f=B.keep; /* 여섯이 찼을 때 잡은 동현몬: 누구를 상자에 맡길지 고른다. Z면 새 동현몬을 맡긴다 */
+    if(keys.upPressed){ B.pcur=(B.pcur-1+n)%n; S.events.push({t:'tick'}); } if(keys.downPressed){ B.pcur=(B.pcur+1)%n; S.events.push({t:'tick'}); }
+    if(keys.bPressed){ B.keep=null; B.phase='q'; deposit(S,f); B.q.unshift({t:'msg',text:`${name(f)}은(는) 연구소 상자로 보내졌다.`}); return; }
+    if(keys.aPressed){ const out=S.party[B.pcur]; B.keep=null; B.phase='q'; S.party[B.pcur]=f; deposit(S,out); S.events.push({t:'pop'}); B.q.unshift({t:'msg',text:`${name(out)}을(를) 상자에 맡기고\n${name(f)}이(가) 함께 가게 되었다.`}); return; }
     return; }
   if(B.phase==='party'){ const n=S.party.length;
     if(keys.upPressed){ B.pcur=(B.pcur-1+n)%n; S.events.push({t:'tick'}); } if(keys.downPressed){ B.pcur=(B.pcur+1)%n; S.events.push({t:'tick'}); }
@@ -270,7 +296,7 @@ function useItem(S,B,key){
     const shakes=ok?3:Math.min(2,Math.floor(a/85));
     for(let i=0;i<shakes;i++) B.q.push({t:'fn',fn:()=>{ S.events.push({t:'shake'}); B.shake=6; }},{t:'pause',n:28});
     if(ok){ B.q.push({t:'fn',fn:()=>{ S.events.push({t:'caught'}); S.dex.caught[f.key]=1; }}); msg(B,`잡았다! ${name(f)}을(를) 잡았다!`);
-      B.q.push({t:'fn',fn:()=>{ f.st={atk:0,def:0,spd:0}; if(S.party.length<PARTY){ S.party.push(f); B.q.unshift({t:'msg',text:`${name(f)}이(가) 함께 가게 되었다.`}); } else { S.box.push(f); B.q.unshift({t:'msg',text:`${name(f)}은(는) 연구소 상자로 보내졌다.`}); } }});
+      B.q.push({t:'fn',fn:()=>{ f.st={atk:0,def:0,spd:0}; if(S.party.length<PARTY){ S.party.push(f); B.q.unshift({t:'msg',text:`${name(f)}이(가) 함께 가게 되었다.`}); } else { B.q.unshift({t:'keep',mon:f}); } }});
       B.q.push({t:'end',result:'catch'}); }
     else { msg(B,['아! 나와 버렸다!','아깝다! 거의 잡을 뻔했다!','앗! 잡힌 줄 알았는데!'][shakes]); foeAct(S,B); B.q.push({t:'menu'}); }
     return; }
@@ -290,5 +316,5 @@ step=function(S,keys){ _step(S,keys); tickPending(S); if(S.fadeIn>0) S.fadeIn--;
 /* 바깥 가방 쓰기(메뉴) */
 function useOutside(S,key,pi){ const m=S.party[pi], it=ITEMS[key]; if(!it.heal||!(S.bag[key]>0)) return '쓸 수 없다.'; if(m.hp<=0) return `${name(m)}은(는) 쓰러져 있어 상처약이 듣지 않는다.`; if(m.hp>=m.maxhp) return `${name(m)}의 체력은 이미 가득하다.`; S.bag[key]--; m.hp=Math.min(m.maxhp,m.hp+it.heal); S.events.push({t:'heal'}); return `${name(m)}의 체력이 ${m.hp}/${m.maxhp}이 되었다.`; }
 function swapParty(S,i,j){ if(S.battle) return false; const t=S.party[i]; S.party[i]=S.party[j]; S.party[j]=t; return true; }
-root.Engine={newGame,step,startBattle,rng:mulberry32,josa,makeMon,calcStats,expFor,species,name,effect,useOutside,swapParty,map,tile,T,MAXLV,PARTY,DIRS};
+root.Engine={newGame,step,startBattle,boxMenu,rng:mulberry32,josa,makeMon,calcStats,expFor,species,name,effect,useOutside,swapParty,map,tile,T,MAXLV,PARTY,DIRS};
 })(window);

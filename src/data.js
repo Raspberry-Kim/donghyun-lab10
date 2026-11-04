@@ -227,10 +227,10 @@ const START=[null,{map:'town1',name:'하얀마을',x:4,y:4,dir:'down'},{map:'rou
 /* ---------- 사람 ---------- */
 const NPCS=[
   {id:'mom',map:'home',x:6,y:3,dir:'left',spr:'mom',text:['다녀오려고? 포동이도 데려가렴.','동현시 체육관 관장은 아주 세다더라.\n산책로에서 동현몬을 더 모으고 가.']},
-  {id:'doc',map:'lab',x:5,y:2,dir:'down',spr:'doc',gift:{item:'ball',n:5},text:['동현 박사: 어서 오너라.\n새 동현볼이 나왔는데 써 보겠니?'],after:['동현 박사: 긴 풀에서 동현몬을 만나면\n체력을 깎은 뒤 동현볼을 던져 보렴.','동현 박사: 동현몬이 여섯이 넘으면\n여기 상자로 보내 둔단다.']},
+  {id:'doc',map:'lab',x:5,y:2,dir:'down',spr:'doc',box:true,gift:{item:'ball',n:5},text:['동현 박사: 어서 오너라.\n새 동현볼이 나왔는데 써 보겠니?'],after:['동현 박사: 긴 풀에서 동현몬을 만나면\n체력을 깎은 뒤 동현볼을 던져 보렴.','동현 박사: 동현몬이 여섯이 넘으면\n상자에 맡겨 두었다가 여기나 회복소에서\n데리고 있는 동현몬과 바꿀 수 있단다.']},
   {id:'girl1',map:'town1',x:14,y:7,dir:'down',spr:'girl',wander:2,text:['오겡끼데스까? 포동이 귀엽다!\n나도 강아지 키우고 싶어.']},
   {id:'old1',map:'town1',x:7,y:13,dir:'right',spr:'old',text:['회복소에 가면 동현몬을 공짜로\n쉬게 해 준단다. 물건도 판다지.']},
-  {id:'nurse1',map:'center',x:4,y:1,dir:'down',spr:'nurse',heal:true,text:['어서 오세요. 회복소입니다.\n동현몬을 쉬게 할까요?']},
+  {id:'nurse1',map:'center',x:4,y:1,dir:'down',spr:'nurse',heal:true,box:true,text:['어서 오세요. 회복소입니다.\n동현몬을 쉬게 할까요?']},
   {id:'clerk1',map:'center',x:9,y:1,dir:'down',spr:'clerk',shop:['ball','potion','superpotion'],text:['어서 오세요. 무엇을 드릴까요?']},
   {id:'t1',map:'route1',x:6,y:9,dir:'right',spr:'boy',sight:4,trainer:{name:'꼬마 뭉치',party:[['lion',4],['fly',4]],reward:160},text:['꼬마 뭉치: 야! 강아지 데리고 어디 가?\n내 벌레들이랑 놀고 가!'],after:['꼬마 뭉치: 포동이 세다… 졌다.']},
   {id:'t2',map:'route1',x:13,y:18,dir:'left',spr:'bugcatcher',sight:4,trainer:{name:'벌레 박사 신중동',party:[['worm',5],['lion',5],['shushu',6]],reward:240},text:['벌레 박사 신중동: 선충의 아름다움을\n모르는군. 가르쳐 주지!'],after:['벌레 박사 신중동: 슈슈까지 지다니.\n내 이름처럼 값이 0일 때만 지는 줄 알았는데.\n동현시 관장에게 가 봐라.']},
