@@ -57,7 +57,7 @@ const SPECIES=[
   {id:2,key:'lion',name:'라이언',types:['bug'],base:[40,45,35,55],learn:[[1,'tackle'],[1,'silk'],[6,'wriggle'],[11,'bite']],catch:200,exp:55,from:'동현파',desc:'분홍 선충. 꿈틀거리며 다가온다. 복싱 자극에 민감하다.',h:'1mm'},
   {id:3,key:'shushu',name:'슈슈',types:['fight'],base:[50,65,40,60],learn:[[1,'jab'],[1,'glare'],[10,'straight'],[15,'rush']],catch:120,exp:80,from:'동현파',desc:'복싱 글러브를 낀 소녀. 잽이 빠르다.',h:'1.2m'},
   {id:4,key:'fly',name:'초파리',types:['bug','fly'],base:[35,40,30,85],learn:[[1,'wingbeat'],[1,'wriggle'],[9,'buzz'],[14,'silk']],catch:190,exp:50,from:'동현초',desc:'작고 빠르다. 날개 소리로 상대를 어지럽힌다.',h:'3mm'},
-  {id:5,key:'worm',name:'예쁜꼬마선충',types:['bug'],base:[50,35,50,30],learn:[[1,'tackle'],[1,'silk'],[7,'wriggle'],[13,'glare']],catch:220,exp:45,from:'동현파',desc:'느리지만 튼튼하다.',h:'1mm'},
+  {id:5,key:'worm',name:'예쁜꼬마선충',types:['bug'],base:[50,35,50,30],learn:[[1,'tackle'],[1,'silk'],[7,'wriggle'],[13,'glare']],catch:220,exp:45,from:'동현파',desc:'주황 선충. 느리지만 튼튼하다.',h:'1mm'},
   {id:6,key:'inf',name:'보병',types:['normal'],base:[55,55,50,45],learn:[[1,'tackle'],[1,'glare'],[8,'bayonet'],[14,'rush']],catch:150,exp:70,from:'동현전',desc:'붉은별 사령부의 보병. 어디서나 나타난다.',h:'1.7m'},
   {id:7,key:'tank',name:'전차',types:['steel'],base:[70,70,80,25],learn:[[1,'tackle'],[1,'armor'],[9,'shellfire'],[15,'rush']],catch:60,exp:120,from:'동현전',desc:'두꺼운 장갑. 느리지만 포격이 아프다.',h:'2.4m'},
   {id:8,key:'jet',name:'전투기',types:['fly','steel'],base:[45,65,50,95],learn:[[1,'wingbeat'],[1,'mg'],[10,'dive'],[16,'aim']],catch:70,exp:115,from:'동현전',desc:'하늘에서 급강하한다. 가장 빠른 동현몬.',h:'5m'},
