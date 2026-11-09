@@ -82,6 +82,16 @@ add('t_b',g)                                                                    
 g=tile_fill('u'); rect(g,2,1,12,13,'A'); rect(g,3,2,10,6,'a'); rect(g,4,3,8,4,'8'); put(g,5,4,'E'); rect(g,4,10,3,2,'g'); rect(g,9,10,3,2,'M'); add('t_B',g)   # 기계
 g=tile_fill('u'); rect(g,5,10,6,5,'x'); rect(g,6,9,4,1,'z'); disc(g,8,6,3.5,'5'); disc(g,7,5,1.6,'6'); add('t_p',g)   # 화분
 g=tile_fill('x'); rect(g,0,0,16,2,'z'); rect(g,0,14,16,2,'z'); rect(g,2,4,12,8,'z'); rect(g,4,6,8,4,'x'); add('t_m',g)  # 매트
+# 확장(v0.18): 부두 널빤지·모래·철로·계단·역 지붕·역 벽·기둥·의자·멈춘 열차
+g=tile_fill('T'); rect(g,0,0,16,1,'h'); rect(g,0,5,16,1,'h'); rect(g,0,10,16,1,'h'); rect(g,0,15,16,1,'h'); put(g,2,2,'t'); put(g,13,7,'t'); put(g,6,12,'t'); add('t_P',g)   # 부두 널빤지(걷는다)
+add('t_n',tile_fill('n',[(2,3),(9,6),(5,11),(13,13),(12,1),(7,8)],'4'))                                 # 모래(걷는다)
+g=tile_fill('9'); rect(g,0,3,16,1,'A'); rect(g,0,11,16,1,'A'); rect(g,1,1,2,14,'t'); rect(g,7,1,2,14,'t'); rect(g,13,1,2,14,'t'); rect(g,0,3,16,1,'A'); rect(g,0,11,16,1,'A'); add('t_r',g)   # 철로(막힘)
+g=tile_fill('u'); rect(g,0,2,16,3,'v'); rect(g,0,5,16,1,'c'); rect(g,0,8,16,3,'v'); rect(g,0,11,16,1,'c'); rect(g,0,14,16,2,'c'); add('t_S',g)   # 계단(밟으면 층을 오르내린다)
+add('t_Z',roof('a','A','N'))                                                                              # 역 지붕
+g=tile_fill('i'); rect(g,0,0,16,1,'I'); rect(g,3,3,10,8,'8'); rect(g,3,3,10,1,'A'); rect(g,3,10,10,1,'A'); rect(g,3,3,1,8,'A'); rect(g,12,3,1,8,'A'); rect(g,7,3,1,8,'A'); rect(g,4,4,2,2,'E'); rect(g,0,15,16,1,'K'); add('t_V',g)   # 역 벽
+g=tile_fill('u'); rect(g,5,0,6,16,'i'); rect(g,5,0,1,16,'I'); rect(g,10,0,1,16,'I'); rect(g,4,0,8,2,'I'); rect(g,4,14,8,2,'I'); add('t_O',g)   # 기둥
+g=tile_fill('u'); rect(g,1,5,14,5,'T'); rect(g,1,5,14,1,'n'); rect(g,2,10,2,4,'h'); rect(g,12,10,2,4,'h'); rect(g,1,2,14,3,'t'); add('t_c',g)   # 의자
+g=tile_fill('9'); rect(g,0,2,16,11,'B'); rect(g,0,2,16,1,'U'); rect(g,2,4,5,4,'8'); rect(g,9,4,5,4,'8'); rect(g,0,10,16,2,'b'); rect(g,2,13,3,3,'K'); rect(g,11,13,3,3,'K'); rect(g,0,12,16,1,'K'); add('t_q',g)   # 멈춘 열차(막힘)
 # 물건·말풍선
 g=blank(); disc(g,8,8,5,'E'); 
 for y in range(16):
@@ -139,6 +149,17 @@ def net(g,view):
 def staff(g,view):
     if view=='left': rect(g,3,6,1,9,'T')
     else: rect(g,13,7,1,8,'T')
+def pack(g,view):
+    if view=='left': rect(g,11,8,3,6,'t'); rect(g,11,8,3,1,'h')
+    elif view=='up': rect(g,5,8,6,5,'t'); rect(g,5,8,6,1,'h'); rect(g,7,9,2,3,'h')
+def rod(g,view):
+    if view=='left': rect(g,2,1,1,14,'T'); put(g,1,0,'T'); rect(g,0,0,1,6,'N')
+    else: rect(g,13,1,1,14,'T'); put(g,14,0,'T'); rect(g,15,0,1,6,'N')
+def band(g,view):
+    if view!='up': rect(g,5,9,6,1,'Y')
+def horn(g,view):
+    if view=='left': rect(g,0,6,4,3,'Y'); rect(g,0,6,1,3,'O')
+    else: rect(g,12,6,4,3,'Y'); rect(g,15,6,1,3,'O')
 PEOPLE={
  'hero':human('K','B','b',hat='M'),
  'mom':human('o','q','j',hair_long=True),
@@ -151,6 +172,15 @@ PEOPLE={
  'bugcatcher':human('K','g','o',hat='y',extra=net),
  'guard':human('K','I','k',hat='I'),
  'leader':human('K','R','k',glasses=True,coat='k'),
+ 'halt':human('K','a','A',hat='A',extra=band),
+ 'chief':human('N','k','K',hat='K',glasses=True,coat='A'),
+ 'sailor':human('o','E','B',hat='B'),
+ 'leader2':human('y','E','b',hat='E',extra=horn),
+ 'leader3':human('O','Y','o',hat='Y',glasses=True),
+ 'hiker':human('h','g','t',hat='t',extra=pack),
+ 'fisher':human('N','7','b',hat='Y',extra=rod),
+ 'worker':human('K','O','A',hat='Y'),
+ 'woman':human('h','P','j',hair_long=True),
 }
 for k,v in PEOPLE.items():
     for view,g in v.items(): add(f'{k}_{view}',g)
@@ -361,6 +391,17 @@ rect(g,7,10,10,8,'5'); rect(g,8,11,8,6,'g'); rect(g,8,18,3,4,'h'); rect(g,13,18,
 rect(g,14,12,9,2,'k'); rect(g,12,13,4,3,'t'); rect(g,21,11,2,1,'K')
 mon('doom',outline(g))
 
+# 정찰기병(동현워): 갈색 말 위의 푸른 기수
+g=blank(24,24); rect(g,3,12,16,6,'t'); rect(g,2,13,3,4,'t'); rect(g,17,9,5,6,'t'); rect(g,18,8,3,2,'t'); put(g,20,11,'K'); rect(g,4,18,2,5,'h'); rect(g,8,18,2,5,'h'); rect(g,13,18,2,5,'h'); rect(g,16,18,2,5,'h'); rect(g,0,11,3,4,'h')
+rect(g,9,3,5,4,'s'); rect(g,9,2,5,2,'I'); put(g,10,5,'K'); put(g,12,5,'K'); rect(g,9,7,5,5,'B'); rect(g,8,8,1,3,'B'); rect(g,14,8,1,3,'B'); rect(g,14,4,1,7,'T')
+mon('scout',outline(g))
+# 폭격기(동현전): 넓은 날개와 폭탄
+g=blank(24,24); rect(g,2,8,20,3,'A'); rect(g,0,9,24,1,'a'); rect(g,9,3,6,14,'a'); rect(g,10,2,4,2,'A'); rect(g,8,16,8,2,'A'); rect(g,11,17,2,4,'A'); rect(g,10,6,4,2,'8'); put(g,4,9,'M'); put(g,19,9,'M'); rect(g,5,12,2,3,'k'); rect(g,17,12,2,3,'k'); rect(g,11,13,2,3,'k')
+mon('bomber',outline(g))
+# 팔라딘(동현워): 하얀 말 위의 은빛 기사, 창과 붉은 깃
+g=blank(24,24); rect(g,3,12,16,6,'E'); rect(g,2,13,3,4,'E'); rect(g,17,9,5,6,'E'); rect(g,18,8,3,2,'N'); put(g,20,11,'K'); rect(g,4,18,2,5,'N'); rect(g,8,18,2,5,'N'); rect(g,13,18,2,5,'N'); rect(g,16,18,2,5,'N'); rect(g,0,11,3,4,'N')
+rect(g,9,2,5,5,'I'); rect(g,10,4,3,1,'K'); rect(g,11,0,1,3,'M'); rect(g,9,7,5,5,'i'); rect(g,8,8,1,3,'i'); rect(g,14,8,1,3,'i'); rect(g,10,8,3,3,'B'); rect(g,15,1,1,15,'T'); rect(g,15,0,1,2,'i'); rect(g,5,7,3,5,'B'); rect(g,6,8,1,3,'Y')
+mon('paladin',outline(g))
 for k,v in MON.items(): SPR['m_'+k]=v
 # ---------- 파일 쓰기 ----------
 lines=['/* 동현몬 그림: 모든 도트는 tools/paint.py가 글자 격자로 새로 그린다. 원작 게임의 그림은 한 점도 쓰지 않는다.',

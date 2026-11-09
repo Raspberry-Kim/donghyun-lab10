@@ -1,7 +1,7 @@
 /* 동현몬 그리기: 320×192 캔버스에 지도·사람·대화·전투 화면을 그린다. */
 (function(root){
 'use strict';
-const {T,MAPS,ITEMS,MOVES,TYPES}=root.DATA, SP=root.Sprites, E=root.Engine;
+const D=root.DATA, {T,MAPS,ITEMS,MOVES,TYPES}=D, SP=root.Sprites, E=root.Engine;
 const W=320,H=192, FONT="11px Pretendard,'Apple SD Gothic Neo','Noto Sans KR',sans-serif", FONTB="bold 11px Pretendard,'Apple SD Gothic Neo','Noto Sans KR',sans-serif";
 function spr(g,key,x,y,flip){ const c=SP.make(key,flip); g.drawImage(c,Math.round(x),Math.round(y)); }
 function sprScaled(g,key,x,y,s,flip){ const c=SP.make(key,flip); g.drawImage(c,Math.round(x),Math.round(y),c.width*s,c.height*s); }
@@ -18,7 +18,7 @@ function camera(S){ const m=MAPS[S.map], mw=m.grid[0].length*T, mh=m.grid.length
   if(mh<=H) cy=Math.round((mh-H)/2); else cy=Math.max(0,Math.min(mh-H,Math.round(h.y+T/2-H/2)));
   S.cam.x=cx; S.cam.y=cy; return [cx,cy]; }
 /* 건물 입체감(동현워 건물을 따른다): 지붕·벽의 바깥 모서리에 테두리, 벽 오른쪽에 그늘 기둥, 건물 아래 땅에 그림자. 이웃 칸을 보고 그리므로 지도 글자는 그대로다. */
-const ROOF='RCLG', WALL='HWD';
+const ROOF='RCLGZ', WALL='HWDV';
 function at(m,x,y){ const r=m.grid[y]; return r?(r[x]||' '):' '; }
 function building(g,m,tx,ty,ch,px,py){
   const INK='#2e2a38';
@@ -77,7 +77,7 @@ function drawBattle(g,S){ const B=S.battle, me=S.party[B.me], f=B.foes[B.fi], fr
     ['싸운다','가방','동현몬','도망'].forEach((s,i)=>{ const x=190+(i%2)*68, y=H-42+Math.floor(i/2)*18; text(g,s,x,y,'#2e2a38',true); if(B.cursor===i) text(g,'▶',x-12,y); }); }
   else if(B.phase==='moves'){ const mv=me.moves; mv.forEach((k,i)=>{ text(g,MOVES[k].name,24,H-45+i*11); if(B.mcur===i) text(g,'▶',10,H-45+i*11); });
     const m=MOVES[mv[Math.min(B.mcur,mv.length-1)]]||{type:'normal'}; box(g,170,H-50,148,48); text(g,'속성 '+TYPES[m.type],180,H-44); text(g,'위력 '+(m.pow||'—'),180,H-31); text(g,'명중 '+(m.acc||100),250,H-31); text(g,m.desc||'',180,H-18,'#5a5262'); }
-  else if(B.phase==='bag'){ const list=['ball','potion','superpotion'].filter(k=>S.bag[k]>0); if(!list.length) text(g,'가방이 비었다.',24,H-44);
+  else if(B.phase==='bag'){ const list=D.ITEM_ORDER.filter(k=>S.bag[k]>0); if(!list.length) text(g,'가방이 비었다.',24,H-44);
     list.forEach((k,i)=>{ text(g,`${ITEMS[k].name} ×${S.bag[k]}`,24,H-45+i*11); if(B.bcur===i) text(g,'▶',10,H-45+i*11); }); text(g,'Z 돌아가기',240,H-16,'#5a5262'); }
   else { const lines=wrap(g,B.text.slice(0,B.n),W-28); lines.slice(0,3).forEach((l,i)=>text(g,l,12,H-44+i*13)); }
   if(B.phase==='keep'&&B.keep) drawParty(g,S,B.pcur,E.josa(`${E.name(B.keep)}과(와) 누구를 바꿀까?`),'Z: 새 동현몬을 맡긴다');
@@ -90,7 +90,7 @@ function drawParty(g,S,cur,title,note){ g.fillStyle='rgba(20,18,30,0.55)'; g.fil
 function draw(g,S){ g.imageSmoothingEnabled=false;
   if(S.battle) drawBattle(g,S); else { drawWorld(g,S); drawDialog(g,S); }
   const a=S.fade>0?1-S.fade/20:S.fadeIn>0?S.fadeIn/14:0; if(a>0){ g.fillStyle=`rgba(10,8,16,${Math.min(1,a).toFixed(2)})`; g.fillRect(0,0,W,H); }
-  if(S.status==='win'&&!S.dialog&&!S.battle){ box(g,60,70,200,52); text(g,'배지를 얻었다!',110,78,'#2e2a38',true); text(g,'동현몬스터 화이트 · 승리',96,98,'#5a5262'); }
+  if(S.status==='win'&&!S.dialog&&!S.battle){ box(g,52,70,216,52); text(g,'멈춤단을 물리쳤다!',98,78,'#2e2a38',true); text(g,'동현이구나 · 동현몬스터 화이트 승리',72,98,'#5a5262'); }
 }
 /* 출전 전 미리보기: 시작 마을 위에 코드가 정한 설정(성격·능력치·출현율·소지금·시드)을 카드로 띄운다. 예제를 바꾸면 바로 바뀐다 */
 function preview(g,S,pv){ draw(g,S); if(!pv) return; const h=56, y=H-h-6; box(g,6,y,W-12,h);

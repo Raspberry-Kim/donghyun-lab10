@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata below."
 title: "Donghyunmon (동현몬): a single-player monster-collecting RPG laboratory set up through the esoteric language Donghyun-lang"
 type: software
-version: "0.17"
-date-released: "2026-11-03"
+version: "0.18"
+date-released: "2026-11-09"
 doi: "10.5281/zenodo.23914029"
 authors:
   - family-names: Kim
@@ -22,9 +22,11 @@ abstract: >-
   layout: A = X key confirm, B = Z key cancel, X = S key party, Y = A key
   status, d-pad or left stick = arrows, + = Enter), or with on-screen buttons,
   using the same key layout as Donghyunjeon, Donghyunwar and Donghyuncr. The
-  hero is followed by Podong-i, the author's dog; the thirteen creatures are
-  borrowed from the other Donghyun laboratories. Its overall structure (towns
-  and tall grass, turn-based battles, capturing with balls, a gym badge, a
+  hero is followed by Podong-i, the author's dog; the sixteen creatures are
+  borrowed from the other Donghyun laboratories. The world has five towns,
+  five routes, three gyms and a final station where the leader of the group
+  that wants to halt the world program is fought. Its overall structure (towns
+  and tall grass, turn-based battles, capturing with balls, gym badges, a
   companion that follows the hero) is inspired by the Game Boy game Pokemon
   Yellow (1998); it contains none of that game's graphics, sound, maps, text,
   names or characters. Pokemon is a trademark of Nintendo, Creatures and Game

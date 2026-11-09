@@ -1,11 +1,12 @@
 /* 동현몬 자료: 지도·사람·동현몬·기술·물건. 원작 게임의 자료는 한 줄도 쓰지 않고 모두 새로 적었다.
    지도 글자(바깥): . 길  , 풀  t 긴 풀(야생 동현몬)  T 나무  w 물  f 울타리  F 꽃  s 표지판  # 바위
                    R 집 지붕  C 회복소 지붕  L 연구소 지붕  G 체육관 지붕  H 벽  W 연구소 벽  D 문
-   지도 글자(안): = 벽  _ 바닥  k 탁자  b 책장  B 기계  p 화분  m 출입 매트 */
+   지도 글자(안): = 벽  _ 바닥  k 탁자  b 책장  B 기계  p 화분  m 출입 매트
+   확장(v0.18, src/world.js): P 부두 널빤지  n 모래  r 철로  S 계단  Z 역 지붕  V 역 벽  O 기둥  c 의자  q 멈춘 열차 */
 (function(root){
 'use strict';
 const T=16;
-const SOLID={T:1,w:1,f:1,s:1,'#':1,R:1,C:1,L:1,G:1,H:1,W:1,'=':1,k:1,b:1,B:1,p:1};
+const SOLID={T:1,w:1,f:1,s:1,'#':1,R:1,C:1,L:1,G:1,H:1,W:1,'=':1,k:1,b:1,B:1,p:1,r:1,Z:1,V:1,O:1,c:1,q:1};
 const TYPES={normal:'노말',fight:'격투',bug:'벌레',fly:'비행',steel:'강철',fire:'불'};
 /* 상성: 공격 타입 → 방어 타입 배율. 적지 않은 짝은 1배 */
 const CHART={
@@ -24,6 +25,8 @@ const MOVES={
   tailwag:{name:'꼬리흔들기',type:'normal',stat:'def',d:-1,acc:100,target:'foe'},
   charm:{name:'애교',type:'normal',stat:'atk',d:-1,acc:100,target:'foe'},
   howl:{name:'하울링',type:'normal',stat:'atk',d:1,target:'self'},
+  pawpunch:{name:'앞발 펀치',type:'fight',pow:70,acc:100},
+  sprint:{name:'전력 질주',type:'normal',pow:100,acc:90},
   glare:{name:'노려보기',type:'normal',stat:'def',d:-1,acc:100,target:'foe'},
   aim:{name:'겨냥',type:'normal',stat:'atk',d:1,target:'self'},
   bayonet:{name:'총검',type:'normal',pow:60,acc:95},
@@ -43,11 +46,14 @@ const MOVES={
   armor:{name:'장갑',type:'steel',stat:'def',d:1,target:'self'},
   shield:{name:'방패',type:'steel',stat:'def',d:1,target:'self'},
   shotgun:{name:'산탄',type:'fire',pow:70,acc:95},
-  rocket:{name:'로켓',type:'fire',pow:90,acc:85}
+  rocket:{name:'로켓',type:'fire',pow:90,acc:85},
+  gallop:{name:'질주',type:'normal',pow:70,acc:100},
+  bomb:{name:'폭격',type:'fire',pow:85,acc:85},
+  lance:{name:'창돌격',type:'fight',pow:85,acc:90}
 };
 /* 동현몬 도감. base: 체력·공격·방어·속도. learn: [레벨, 기술]. catch: 포획 쉬움(0~255). exp: 경험치 기준 */
 const SPECIES=[
-  {id:1,key:'podong',name:'포동이',types:['normal'],base:[45,55,40,90],learn:[[1,'bark'],[1,'tailwag'],[8,'bite'],[12,'charm'],[16,'rush'],[20,'howl']],catch:0,exp:90,from:'실험실',desc:'실험실의 하얀 강아지. 산책을 가장 좋아한다. 주인 뒤를 졸졸 따라다닌다.',h:'0.4m'},
+  {id:1,key:'podong',name:'포동이',types:['normal'],base:[45,55,40,90],learn:[[1,'bark'],[1,'tailwag'],[8,'bite'],[12,'charm'],[16,'rush'],[20,'howl'],[24,'pawpunch'],[30,'sprint']],catch:0,exp:90,from:'실험실',desc:'실험실의 하얀 강아지. 산책을 가장 좋아한다. 주인 뒤를 졸졸 따라다닌다.',h:'0.4m'},
   {id:2,key:'lion',name:'라이언',types:['bug'],base:[40,45,35,55],learn:[[1,'tackle'],[1,'silk'],[6,'wriggle'],[11,'bite']],catch:200,exp:55,from:'동현파',desc:'분홍 선충. 꿈틀거리며 다가온다. 복싱 자극에 민감하다.',h:'1mm'},
   {id:3,key:'shushu',name:'슈슈',types:['fight'],base:[50,65,40,60],learn:[[1,'jab'],[1,'glare'],[10,'straight'],[15,'rush']],catch:120,exp:80,from:'동현파',desc:'복싱 글러브를 낀 소녀. 잽이 빠르다.',h:'1.2m'},
   {id:4,key:'fly',name:'초파리',types:['bug','fly'],base:[35,40,30,85],learn:[[1,'wingbeat'],[1,'wriggle'],[9,'buzz'],[14,'silk']],catch:190,exp:50,from:'동현초',desc:'작고 빠르다. 날개 소리로 상대를 어지럽힌다.',h:'3mm'},
@@ -59,9 +65,13 @@ const SPECIES=[
   {id:10,key:'archer',name:'궁수',types:['normal'],base:[45,55,40,70],learn:[[1,'arrow'],[1,'aim'],[8,'tackle'],[13,'glare']],catch:120,exp:75,from:'동현워',desc:'멀리서 화살을 날린다. 겨냥하면 더 아프다.',h:'1.7m'},
   {id:11,key:'knight',name:'기사',types:['steel'],base:[65,70,70,40],learn:[[1,'tackle'],[1,'shield'],[10,'charge'],[16,'straight']],catch:60,exp:110,from:'동현워',desc:'갑옷과 방패. 돌격은 막기 어렵다.',h:'2m'},
   {id:12,key:'copter',name:'꼬리콥터',types:['fly'],base:[50,50,45,80],learn:[[1,'wingbeat'],[1,'buzz'],[9,'rotor'],[15,'aim']],catch:90,exp:85,from:'동현콥',desc:'동굴을 나는 작은 헬기. 프로펠러로 친다.',h:'1m'},
-  {id:13,key:'doom',name:'둠가이',types:['fire'],base:[70,85,60,70],learn:[[1,'shotgun'],[1,'glare'],[12,'rocket'],[18,'rush']],catch:0,exp:150,from:'동현둠',desc:'초록 철모와 산탄총. 관장의 비장의 동현몬.',h:'1.9m'}
+  {id:13,key:'doom',name:'둠가이',types:['fire'],base:[70,85,60,70],learn:[[1,'shotgun'],[1,'glare'],[12,'rocket'],[18,'rush']],catch:0,exp:150,from:'동현둠',desc:'초록 철모와 산탄총. 관장의 비장의 동현몬.',h:'1.9m'},
+  {id:14,key:'scout',name:'정찰기병',types:['normal'],base:[50,55,45,95],learn:[[1,'tackle'],[1,'aim'],[10,'gallop'],[16,'rush']],catch:130,exp:80,from:'동현워',desc:'말 탄 정찰병. 고개와 길을 빠르게 달린다.',h:'2.2m'},
+  {id:15,key:'bomber',name:'폭격기',types:['fly','fire'],base:[65,80,55,60],learn:[[1,'wingbeat'],[1,'glare'],[14,'bomb'],[18,'dive']],catch:50,exp:130,from:'동현전',desc:'넓은 날개 아래 폭탄을 품었다. 폭격은 불처럼 번진다.',h:'8m'},
+  {id:16,key:'paladin',name:'팔라딘',types:['steel','fight'],base:[75,80,75,55],learn:[[1,'shield'],[1,'straight'],[12,'charge'],[20,'lance']],catch:30,exp:160,from:'동현워',desc:'하얀 말 위의 은빛 기사. 멈춤단이 아끼는 귀한 동현몬.',h:'2.4m'}
 ];
-const ITEMS={ball:{name:'동현볼',price:200,desc:'야생 동현몬을 잡는다. 체력이 낮을수록 잘 잡힌다.'},potion:{name:'상처약',price:300,heal:20,desc:'체력을 20 회복한다.'},superpotion:{name:'좋은상처약',price:700,heal:50,desc:'체력을 50 회복한다.'}};
+const ITEMS={ball:{name:'동현볼',price:200,desc:'야생 동현몬을 잡는다. 체력이 낮을수록 잘 잡힌다.'},potion:{name:'상처약',price:300,heal:20,desc:'체력을 20 회복한다.'},superpotion:{name:'좋은상처약',price:700,heal:50,desc:'체력을 50 회복한다.'},hyperpotion:{name:'최고상처약',price:1500,heal:120,desc:'체력을 120 회복한다.'}};
+const ITEM_ORDER=['ball','potion','superpotion','hyperpotion'];
 const PERSONALITY=[null,{name:'균형',desc:'능력치 보정 없음',mod:{}},{name:'공격형',desc:'공격 +10% · 방어 −10%',mod:{atk:1.1,def:.9}},{name:'방어형',desc:'방어 +10% · 공격 −10%',mod:{def:1.1,atk:.9}},{name:'재빠름',desc:'속도 +10% · 체력 −10%',mod:{spd:1.1,hp:.9}},{name:'느긋함',desc:'체력 +10% · 속도 −10%',mod:{hp:1.1,spd:.9}}];
 
 /* ---------- 지도 ---------- */
@@ -73,8 +83,8 @@ town1:{name:'하얀마을',kind:'out',grid:[
 'T,HHDH,,,,..,,,,HHDHH,,T',
 'T,,,,,,,,,..,,,,,,,,,,,T',
 'T,,s,,,,,,..,,,,,,,s,,,T',
-'T,,,,,,...........,,,,,T',
-'T,,,,,,.,,,,,,,,,.,,,,,T',
+'.......................T',
+'Ts,,,,,.,,,,,,,,,.,,,,,T',
 'T,FF,,,.,,LLLLLL,.,,,,,T',
 'T,FF,,,.,,WWWDWW,.,,,,,T',
 'T,,,,,,.,,,,,,,,,.,,,,,T',
@@ -85,9 +95,9 @@ town1:{name:'하얀마을',kind:'out',grid:[
 'T,,,,wwww,,,,,,,,,,,,,,T',
 'T,,,,wwww,,,,,,,,,,,,,,T',
 'TTTTTTTTTTTTTTTTTTTTTTTT'],
-warps:[{x:10,y:0,to:{map:'route1',x:9,y:30,dir:'up'}},{x:11,y:0,to:{map:'route1',x:10,y:30,dir:'up'}},
+warps:[{x:10,y:0,to:{map:'route1',x:9,y:30,dir:'up'}},{x:11,y:0,to:{map:'route1',x:10,y:30,dir:'up'}},{x:0,y:6,to:{map:'route5',x:1,y:14,dir:'left'}},
   {x:4,y:3,to:{map:'home',x:4,y:6,dir:'up'}},{x:18,y:3,to:{map:'center',x:5,y:6,dir:'up'},tag:'center1'},{x:13,y:9,to:{map:'lab',x:5,y:6,dir:'up'}}],
-signs:[{x:3,y:5,text:['하얀마을\n포동이와 동현이 사는 조용한 마을.']},{x:19,y:5,text:['↑ 산책로를 지나면 동현시\n체육관은 동현시에 있다.']}],
+signs:[{x:3,y:5,text:['하얀마을\n포동이와 동현이 사는 조용한 마을.']},{x:19,y:5,text:['↑ 산책로를 지나면 동현시\n체육관은 동현시에 있다.']},{x:1,y:7,text:['← 호숫길 (공사 중)\n꽥꽥마을로 가는 지름길.']}],
 spawn:{x:4,y:4,dir:'down'}},
 route1:{name:'산책로',kind:'out',grid:[
 'TTTTTTTTT..TTTTTTTTT',
@@ -124,7 +134,7 @@ route1:{name:'산책로',kind:'out',grid:[
 'TTTTTTTTT..TTTTTTTTT'],
 warps:[{x:9,y:31,to:{map:'town1',x:10,y:1,dir:'down'}},{x:10,y:31,to:{map:'town1',x:11,y:1,dir:'down'}},
   {x:9,y:0,to:{map:'town2',x:10,y:16,dir:'up'}},{x:10,y:0,to:{map:'town2',x:11,y:16,dir:'up'}}],
-signs:[{x:5,y:28,text:['산책로 남쪽\n긴 풀에는 야생 동현몬이 산다.']},{x:17,y:9,text:['산책로 북쪽 · 신중동역 터\n↑ 동현시']}],
+signs:[{x:5,y:28,text:['산책로 남쪽\n긴 풀에는 야생 동현몬이 산다.']},{x:17,y:9,text:['산책로 북쪽\n↑ 동현시. 동현시 동쪽은 뚱띠 고개.']}],
 wild:[{maxY:15,table:[['lion',25],['fly',25],['worm',15],['inf',15],['pike',10],['archer',10]],lv:[4,8]},{maxY:99,table:[['lion',40],['worm',30],['fly',25],['inf',5]],lv:[2,5]}],
 items:[{x:2,y:10,item:'potion',n:1},{x:16,y:22,item:'ball',n:3}],
 spawn:{x:9,y:29,dir:'up'}},
@@ -135,9 +145,9 @@ town2:{name:'동현시',kind:'out',grid:[
 'T,,GGGGGG,,,,,,HHDHH,,,T',
 'T,,HHHDHH,,,,,,,,,,,,,,T',
 'T,,,,,,,,,,,,,,,,,,,,,,T',
-'T,,s,,,,,,,,,,,,,,,,,,,T',
-'T,,,,,,,........,,,,,,,T',
-'T,,,,,,,.,,,,,,.,,,,,,,T',
+'T,,s,,,,,,,,,,,,,,,,s,,T',
+'T,,,,,,,................',
+'T,,,,,,,.,,,,,,.........',
 'T,,RRRR,.,,FF,,.,RRRR,,T',
 'T,,HHDH,.,,FF,,.,HDHH,,T',
 'T,,,,,,,.,,,,,,.,,,,,,,T',
@@ -147,9 +157,9 @@ town2:{name:'동현시',kind:'out',grid:[
 'T,,,,,,,,,,,,,,,,,,,,,,T',
 'T,,,,,,,,,,,,,,,,,,,,,,T',
 'TTTTTTTTTT..TTTTTTTTTTTT'],
-warps:[{x:10,y:17,to:{map:'route1',x:9,y:1,dir:'down'}},{x:11,y:17,to:{map:'route1',x:10,y:1,dir:'down'}},
+warps:[{x:10,y:17,to:{map:'route1',x:9,y:1,dir:'down'}},{x:11,y:17,to:{map:'route1',x:10,y:1,dir:'down'}},{x:23,y:7,to:{map:'route2',x:1,y:9,dir:'right'}},{x:23,y:8,to:{map:'route2',x:1,y:10,dir:'right'}},
   {x:6,y:4,to:{map:'gym',x:5,y:14,dir:'up'}},{x:17,y:3,to:{map:'center',x:5,y:6,dir:'up'},tag:'center2'},{x:5,y:10,to:{map:'houseA',x:4,y:6,dir:'up'}},{x:18,y:10,to:{map:'houseB',x:4,y:6,dir:'up'}}],
-signs:[{x:3,y:6,text:['동현시 체육관\n관장: 동현\n"코드로 정한 팀으로 덤벼라."']}],
+signs:[{x:3,y:6,text:['동현시 체육관\n관장: 동현\n"코드로 정한 팀으로 덤벼라."']},{x:20,y:6,text:['→ 뚱띠 고개 · 뿡뿡항\n고개는 멈춤단이 막고 있다.']}],
 items:[{x:12,y:13,item:'superpotion',n:1}],
 spawn:{x:10,y:15,dir:'up'}},
 home:{name:'포동이네 집',kind:'in',grid:[
@@ -222,7 +232,9 @@ houseB:{name:'동현시 집',kind:'in',grid:[
 warps:[{x:4,y:6,to:{map:'town2',x:18,y:11,dir:'down'}},{x:5,y:6,to:{map:'town2',x:18,y:11,dir:'down'}}],signs:[],spawn:{x:4,y:5,dir:'down'}}
 };
 /* 시작 지도(출전 규약 1) */
-const START=[null,{map:'town1',name:'하얀마을',x:4,y:4,dir:'down'},{map:'route1',name:'산책로',x:9,y:29,dir:'up'},{map:'town2',name:'동현시',x:10,y:15,dir:'up'}];
+const START=[null,{map:'town1',name:'하얀마을',x:4,y:4,dir:'down'},{map:'route1',name:'산책로',x:9,y:29,dir:'up'},{map:'town2',name:'동현시',x:10,y:15,dir:'up'},{map:'town3',name:'뿡뿡항',x:14,y:11,dir:'up'},{map:'town4',name:'꽥꽥마을',x:11,y:18,dir:'up'}];
+/* 확장 세계(src/world.js)의 지도를 합친다 */
+if(root.WORLD) Object.assign(MAPS,root.WORLD.MAPS);
 
 /* ---------- 사람 ---------- */
 const NPCS=[
@@ -235,15 +247,16 @@ const NPCS=[
   {id:'t1',map:'route1',x:6,y:9,dir:'right',spr:'boy',sight:4,trainer:{name:'꼬마 뭉치',party:[['lion',4],['fly',4]],reward:160},text:['꼬마 뭉치: 야! 강아지 데리고 어디 가?\n내 벌레들이랑 놀고 가!'],after:['꼬마 뭉치: 포동이 세다… 졌다.']},
   {id:'t2',map:'route1',x:13,y:18,dir:'left',spr:'bugcatcher',sight:4,trainer:{name:'벌레 박사 신중동',party:[['worm',5],['lion',5],['shushu',6]],reward:240},text:['벌레 박사 신중동: 선충의 아름다움을\n모르는군. 가르쳐 주지!'],after:['벌레 박사 신중동: 슈슈까지 지다니.\n내 이름처럼 값이 0일 때만 지는 줄 알았는데.\n동현시 관장에게 가 봐라.']},
   {id:'girl2',map:'route1',x:4,y:27,dir:'down',spr:'girl',wander:2,text:['긴 풀에 들어가면 동현몬이 튀어나와.\n포동이가 있으니 괜찮겠지?']},
-  {id:'old2',map:'town2',x:12,y:6,dir:'down',spr:'old',wander:2,text:['관장은 강철 동현몬을 쓴단다.\n격투나 불 기술이 잘 통하지.']},
+  {id:'old2',map:'town2',x:12,y:6,dir:'down',spr:'old',wander:2,text:['관장은 강철 동현몬을 쓴단다.\n격투나 불 기술이 잘 통하지.','동쪽 뚱띠 고개는 멈춤단이 막고 있어.\n"오겡끼데스까!" 하고 소리치는 이상한 패거리야.']},
   {id:'boy2',map:'town2',x:19,y:13,dir:'left',spr:'boy',text:['체육관 안에도 수련생이 둘 있어.\n회복소에서 쉬고 들어가.']},
   {id:'ha',map:'houseA',x:6,y:3,dir:'left',spr:'mom',text:['우리 집 강아지도 하얗단다.\n포동이랑 친구 하면 좋겠네.']},
   {id:'hb',map:'houseB',x:3,y:3,dir:'right',spr:'old',text:['동현랭? 도옹 하고 뿡뿡 하는 그 말?\n신중동이면 0일 때, 뭉치면 음수일 때 한다지.','젊은이들은 그걸로 출전 설정을 한다며.\n꽥꽥 하면 값을 받고 오겡끼데스까 하면 멈춘다나.']},
   {id:'guide',map:'gym',x:2,y:13,dir:'right',spr:'boy',text:['여기는 동현시 체육관.\n관장은 전차·기사·둠가이를 쓴다.\n강철에는 격투와 불이 2배!','수련생 또치와 뚱띠는 동현랭의\n나머지·몫 이름을 땄다. 둘 다 세다.']},
   {id:'g1',map:'gym',x:3,y:7,dir:'right',spr:'guard',sight:5,trainer:{name:'수련생 또치',party:[['inf',8],['pike',8]],reward:320},text:['수련생 또치: 관장님을 만나려면\n나부터 이겨라! 나머지는 남기지 않는다!'],after:['수련생 또치: 좋은 승부였다.\n나눈 나머지가 0이면 지는 법이지.']},
   {id:'g2',map:'gym',x:8,y:10,dir:'left',spr:'guard',sight:5,trainer:{name:'수련생 뚱띠',party:[['archer',9],['copter',9]],reward:360},text:['수련생 뚱띠: 하늘을 나는 동현몬의\n맛을 보여 주지! 체력을 반으로 나눠 주마!'],after:['수련생 뚱띠: 관장님은 저 위에 계신다.']},
-  {id:'leader',map:'gym',x:6,y:2,dir:'down',spr:'leader',sight:0,trainer:{name:'관장 동현',party:[['tank',11],['knight',11],['doom',13]],reward:1500,boss:true},text:['관장 동현: 왔구나.\n코드로 정한 팀이 얼마나 센지 보자.','관장 동현: 강철과 불로 상대해 주마!'],after:['관장 동현: 훌륭하다. 하얀 배지를 받아라.\n포동이와의 산책이 너를 강하게 했구나.']}
-];
-root.DATA={T,SOLID,TYPES,CHART,MOVES,SPECIES,ITEMS,PERSONALITY,MAPS,START,NPCS,
+  {id:'leader',map:'gym',x:6,y:2,dir:'down',spr:'leader',sight:0,trainer:{name:'관장 동현',party:[['tank',11],['knight',11],['doom',13]],reward:1500,badge:true},text:['관장 동현: 왔구나.\n코드로 정한 팀이 얼마나 센지 보자.','관장 동현: 강철과 불로 상대해 주마!'],after:['관장 동현: 훌륭하다. 하얀 배지를 받아라.\n포동이와의 산책이 너를 강하게 했구나.','관장 동현: 동쪽 뚱띠 고개 너머 뿡뿡항에도\n체육관이 있다. 멈춤단이 고개를 막는다니 조심해라.']},
+  {id:'gatew',map:'town1',x:2,y:6,dir:'right',spr:'worker',text:['공사 아저씨: 호숫길은 공사 중이다.\n배지 둘을 가진 트레이너라면\n알아서 다닐 수 있겠지만.'],gate:{badge:2,aside:{x:2,y:5},open:['공사 아저씨: 배지가 둘이군. 지나가라.\n호숫길은 꽥꽥마을로 이어진다.'],closed:['공사 아저씨: 배지가 모자라다.\n동현시·뿡뿡항 체육관부터 다녀와라.']}}
+].concat(root.WORLD?root.WORLD.NPCS:[]);
+root.DATA={T,SOLID,TYPES,CHART,MOVES,SPECIES,ITEMS,ITEM_ORDER,PERSONALITY,MAPS,START,NPCS,
   species:key=>SPECIES.find(s=>s.key===key)};
 })(window);

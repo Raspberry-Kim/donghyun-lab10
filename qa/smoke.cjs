@@ -1,5 +1,5 @@
 // 동현몬 연기 시험: node qa/smoke.cjs [playwright 경로]
-// 예제 13개 해석 · 걷기·문·대화·선물 · 야생 전투 승리·포획 · 트레이너 승부 · 회복소 · 저장/불러오기 · 체육관 배지
+// 예제 33개 해석 · 걷기·문·대화·선물 · 야생 전투 승리·포획 · 트레이너 승부 · 회복소 · 저장/불러오기 · 체육관 배지
 const path=require('path');
 const {chromium}=require(process.argv[2]||'playwright');
 const file='file://'+path.resolve(__dirname,'..','dist','index.html');
@@ -24,8 +24,8 @@ const assert=(c,m)=>{ if(!c) throw new Error('실패: '+m); };
   // 1) 예제 해석
   const ex=await page.evaluate(()=>__donghyunmon.examples.map(e=>{ const r=Donghyun.run(e.code,{maxSteps:300000}); const p=__donghyunmon.parseSortie(r.output); return {id:e.id,err:p.err,go:p.go,c:p.c}; }));
   for(const e of ex) assert(!e.err.length,`예제 ${e.id}: ${e.err[0]}`);
-  assert(ex.filter(e=>e.go).length===12&&!ex[12].go,'출전 예제 12개 + 빈 코드 1개');
-  assert(ex[8].c.money===5000&&ex[11].c.money===3000&&ex[11].c.pers===2,'예제 값');
+  assert(ex.length===33&&ex.filter(e=>e.go).length===32&&!ex[32].go,'출전 예제 32개 + 빈 코드 1개');
+  assert(ex[13].c.money===5000&&ex[15].c.money===9999&&ex[17].c.seed===-3&&ex[18].c.seed===2024&&ex[25].c.money===3000&&ex[25].c.pers===2&&ex[26].c.startMap===4&&ex[26].c.seed===64&&ex[27].c.pers===3&&ex[28].c.money===5000&&ex[29].c.money===4000&&ex[30].c.pers===4,'예제 값');
   // 2) 하얀마을: 연구소에서 동현볼 받기
   let r=await page.evaluate(()=>{ const H=__donghyunmon; H.start({startMap:1,pers:1,rate:1,money:1000,seed:3}); H.walk('down',6); H.walk('right',9); H.walk('up',1); const inLab=H.state.map==='lab'; H.walk('up',2); H.walk('left',2); H.walk('up',2); H.walk('right',1); H.face('right'); H.press('x'); const pages=H.state.dialog&&H.state.dialog.pages; H.talk(); return {inLab,map:H.state.map,hero:[H.state.hero.tx,H.state.hero.ty],pet:H.state.petHidden,balls:H.state.bag.ball,pages}; });
   assert(r.inLab&&r.map==='lab','연구소 진입 '+JSON.stringify(r)); assert(r.balls===5,'동현볼 5개 받기 '+JSON.stringify(r));
@@ -45,7 +45,7 @@ const assert=(c,m)=>{ if(!c) throw new Error('실패: '+m); };
     if(S.status==='play'&&S.map==='gym'){ H.step(3); handle(); H.face('up'); H.press('x'); handle(); H.step(3); handle(); }
     H.step(30); return {gym,log,status:S.status,badge:S.badge,money:S.money,mode:H.mode,hero:[S.hero.tx,S.hero.ty],map:S.map}; });
   console.log('체육관:',JSON.stringify(r));
-  assert(r.gym==='gym','체육관 진입'); assert(r.log.includes('leader')&&r.status==='win'&&r.badge===1,'관장 승리 → 배지·승리');
+  assert(r.gym==='gym','체육관 진입'); assert(r.log.includes('leader')&&r.status==='play'&&r.badge===1,'관장 승리 → 배지 1 (모험은 계속)');
   // 5) 회복소 + 저장/불러오기
   r=await page.evaluate(()=>{ const H=__donghyunmon; H.start({startMap:1,pers:1,rate:0,money:1000,seed:1}); const S=H.state; S.party[0].hp=3;
     // (4,4) → 회복소 문 (18,3): 오른쪽 14칸, 위 1칸

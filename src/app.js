@@ -1,7 +1,7 @@
 /* 동현몬 앱: 동현랭 편집기 → 출전 규약(시작 마을·성격·출현율·소지금·시드) → 키보드 모험. 동현전·동현워와 같은 키 배치. */
 (function(){
 const HINT0='<span><kbd>X</kbd>확인·말걸기</span><span><kbd>Z</kbd>취소</span><span><kbd>S</kbd>동현몬</span><span><kbd>↵</kbd>메뉴</span>';
-const $=s=>document.querySelector(s), E=window.Engine, R=window.Render, {SPECIES,TYPES,MOVES,ITEMS,PERSONALITY,MAPS,START,NPCS}=window.DATA;
+const $=s=>document.querySelector(s), E=window.Engine, R=window.Render, {SPECIES,TYPES,MOVES,ITEMS,ITEM_ORDER,PERSONALITY,MAPS,START,NPCS}=window.DATA;
 const canvas=$('#board'), g=canvas.getContext('2d');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -64,7 +64,7 @@ let cfg={...DEFAULT};
 function parseSortie(out){
   const tok=out.split(/\s+/).filter(Boolean).map(Number), c={...DEFAULT}, err=[];
   let go=false;
-  const rule={1:['시작 마을','startMap',v=>Number.isInteger(v)&&v>=1&&v<=3,'1 하얀마을 · 2 산책로 · 3 동현시'],2:['포동이 성격','pers',v=>Number.isInteger(v)&&v>=1&&v<=5,'1~5'],3:['야생 출현율','rate',v=>Number.isInteger(v)&&v>=0&&v<=5,'0(없음)~5'],4:['소지금','money',v=>Number.isInteger(v)&&v>=0&&v<=9999,'0~9999'],5:['시드','seed',v=>Number.isInteger(v)&&Math.abs(v)<=1e9,'정수']};
+  const rule={1:['시작 마을','startMap',v=>Number.isInteger(v)&&v>=1&&v<=5,'1 하얀마을 · 2 산책로 · 3 동현시 · 4 뿡뿡항 · 5 꽥꽥마을'],2:['포동이 성격','pers',v=>Number.isInteger(v)&&v>=1&&v<=5,'1~5'],3:['야생 출현율','rate',v=>Number.isInteger(v)&&v>=0&&v<=5,'0(없음)~5'],4:['소지금','money',v=>Number.isInteger(v)&&v>=0&&v<=9999,'0~9999'],5:['시드','seed',v=>Number.isInteger(v)&&Math.abs(v)<=1e9,'정수']};
   for(let i=0;i<tok.length;i++){
     const n=tok[i];
     if(go){ err.push(`출전 명령 6 뒤에 ${tok.length-i}개의 정수가 더 나왔다. 6은 마지막에 출력하자.`); break; }
@@ -100,7 +100,7 @@ function sortie(){
 
 /* ---------- 상태·화면 ---------- */
 let S=null, previewS=null, mode='setup', paused=false, menu=null, lastMap=null;
-const keys={up:false,down:false,left:false,right:false,upPressed:false,downPressed:false,leftPressed:false,rightPressed:false,aPressed:false,bPressed:false};
+const keys={up:false,down:false,left:false,right:false,b:false,upPressed:false,downPressed:false,leftPressed:false,rightPressed:false,aPressed:false,bPressed:false};
 function clearPressed(){ keys.upPressed=keys.downPressed=keys.leftPressed=keys.rightPressed=keys.aPressed=keys.bPressed=false; }
 let previewCard=null;
 function preview(c){ previewS=E.newGame({...c}); const m=previewS.party[0];
@@ -137,7 +137,7 @@ requestAnimationFrame(frame);
 function drawPauseDim(){ g.fillStyle='rgba(0,0,0,.35)'; g.fillRect(0,0,canvas.width,canvas.height); }
 
 /* ---------- 사건 → 소리·기록 ---------- */
-const SNDMAP={step:'foot',bump:'thud',door:'swap',tick:'tick',pop:'pop',item:'sparkle',heal:'heartup',buy:'coin',encounter:'alert',hit:'hurt',stat:'ping',faint:'fall',levelup:'heartup',shake:'thud',caught:'sparkle',money:'coin',win:'win'};
+const SNDMAP={step:'foot',bump:'thud',door:'swap',tick:'tick',pop:'pop',item:'sparkle',heal:'heartup',buy:'coin',encounter:'alert',hit:'hurt',stat:'ping',faint:'fall',levelup:'heartup',shake:'thud',caught:'sparkle',money:'coin',win:'win',badge:'cheer'};
 function events(){
   const evs=S.events.splice(0); /* 먼저 비운다: 처리 중 오류가 나도 같은 사건이 매 틀 되풀이되지 않게 */
   for(const ev of evs){
@@ -148,7 +148,8 @@ function events(){
     if(ev.t==='battleEnd'){ if(ev.result==='lose'){ SND.play('lose'); log('모든 동현몬이 쓰러졌다. 회복소로 돌아간다.'); } else if(ev.result==='run') log('무사히 도망쳤다.'); else if(ev.kind==='wild'&&ev.result==='win') log('야생 동현몬을 쓰러뜨렸다.'); }
     if(ev.t==='heal'&&!S.battle) log('동현몬이 모두 회복되었다.');
     if(ev.t==='item'&&S.dialog) log(S.dialog.pages[0].replace(/\n/g,' '));
-    if(ev.t==='win') log('체육관 배지를 얻었다. 동현몬스터 화이트, 승리.');
+    if(ev.t==='badge') log(`체육관 배지를 얻었다. 배지 ${ev.n}/3.`);
+    if(ev.t==='win') log('역장 오겡끼를 이겼다. 멈춤단을 물리쳤다. 동현이구나 — 동현몬스터 화이트, 승리.');
   }
   hud();
 }
@@ -156,7 +157,7 @@ function log(html){ const li=document.createElement('li'); li.innerHTML=esc(E.jo
 const hpCls=r=>r>0.5?'ok':r>0.2?'mid':'low';
 function hud(){
   $('#party-card').innerHTML=S.party.map((m,i)=>`<div class="pm ${m.hp<=0?'ko':''}"><b>${esc(E.name(m))}</b><small>Lv${m.lv}</small><div class="hpbar"><i class="${hpCls(m.hp/m.maxhp)}" style="width:${Math.round(100*m.hp/m.maxhp)}%"></i></div><span>${m.hp}/${m.maxhp}</span></div>`).join('')+(S.box.length?`<small class="boxnote">상자 ${S.box.length}마리</small>`:'');
-  $('#info-card').innerHTML=[['소지금',S.money.toLocaleString('ko-KR')+'원'],['동현볼',String(S.bag.ball||0)],['상처약',`${S.bag.potion||0} · 좋은 ${S.bag.superpotion||0}`],['배지',S.badge?'1':'0'],['도감',`${Object.keys(S.dex.caught).length} / ${SPECIES.length}`],['걸음·시간',`${S.steps} · ${Math.floor(S.time/60)}초`]].map(([a,b])=>`<div><span>${a}</span><strong>${b}</strong></div>`).join('');
+  $('#info-card').innerHTML=[['소지금',S.money.toLocaleString('ko-KR')+'원'],['동현볼',String(S.bag.ball||0)],['상처약',`${S.bag.potion||0} · 좋은 ${S.bag.superpotion||0} · 최고 ${S.bag.hyperpotion||0}`],['배지',`${S.badge} / 3`],['도감',`${Object.keys(S.dex.caught).length} / ${SPECIES.length}`],['걸음·시간',`${S.steps} · ${Math.floor(S.time/60)}초`]].map(([a,b])=>`<div><span>${a}</span><strong>${b}</strong></div>`).join('');
   $('#turn-badge').textContent=MAPS[S.map].name+(S.battle?' · 전투':''); $('#turn-badge').className='';
 }
 
@@ -174,11 +175,11 @@ function backToSetup(){
   preview(cfg); status('출전 준비'); result('다시 나서려면 코드를 고치거나 그대로 출전을 누르자.'); $('#hint').innerHTML=HINT0; renderSlotList();
 }
 function finish(){
-  mode='over'; status('배지 획득'); keys.up=keys.down=keys.left=keys.right=false;
+  mode='over'; status('승리'); keys.up=keys.down=keys.left=keys.right=false;
   $('#hint').innerHTML='<span><kbd>X</kbd><kbd>↵</kbd>출전 준비로</span>';
 }
 function resultCard(){
-  $('#result-card').innerHTML=`<div><h3 class="win">체육관 배지를 얻었다</h3><div class="rc-grid"><div><span>배지</span><strong>1</strong></div><div><span>도감</span><strong>${Object.keys(S.dex.caught).length} / ${SPECIES.length}</strong></div><div><span>걸음</span><strong>${S.steps.toLocaleString('ko-KR')}</strong></div><div><span>시간</span><strong>${Math.floor(S.time/60)}초</strong></div></div><p>X 또는 Enter로 출전 준비로 돌아간다.</p><button id="rc-back">출전 준비로</button></div>`; $('#rc-back').onclick=backToSetup;
+  $('#result-card').innerHTML=`<div><h3 class="win">멈춤단을 물리쳤다 · 동현이구나</h3><div class="rc-grid"><div><span>배지</span><strong>${S.badge} / 3</strong></div><div><span>도감</span><strong>${Object.keys(S.dex.caught).length} / ${SPECIES.length}</strong></div><div><span>걸음</span><strong>${S.steps.toLocaleString('ko-KR')}</strong></div><div><span>시간</span><strong>${Math.floor(S.time/60)}초</strong></div></div><p>X 또는 Enter로 출전 준비로 돌아간다.</p><button id="rc-back">출전 준비로</button></div>`; $('#rc-back').onclick=backToSetup;
   $('#result-card').hidden=false;
 }
 $('#concede').onclick=()=>{ if(!S||mode==='over') return; confirmMenu('포기하고 출전 준비로 돌아갈까?',[['포기한다',backToSetup],['계속 간다',()=>{}]]); };
@@ -192,13 +193,13 @@ function pick(){ const it=menu.items[menu.i]; if(!it||it.off) return; closeMenu(
 function confirmMenu(q,opts,back){ openMenu(q,opts.map(([label,fn])=>({label,fn})),back); }
 const monNote=m=>`Lv${m.lv} · 체력 ${m.hp}/${m.maxhp} · ${m.moves.map(k=>MOVES[k].name).join(' ')}`;
 function mainMenu(){ const inWorld=S.mode==='world'; openMenu('잠시 멈춤',[['계속 간다',()=>{}],{label:'동현몬',note:'순서 바꾸기 · 상처약',off:!inWorld,fn:partyMenu},{label:'가방',note:bagNote(),off:!inWorld,fn:bagMenu},['도감',dexMenu],{label:'저장',off:!inWorld,note:inWorld?'':'전투·대화 중에는 저장할 수 없다',fn:saveMenu},['불러오기',loadMenu],['포기하고 출전 준비로',()=>confirmMenu('포기하고 출전 준비로 돌아갈까?',[['포기한다',backToSetup],['계속 간다',()=>{}]],mainMenu)]]); }
-function bagNote(){ return ['ball','potion','superpotion'].filter(k=>S.bag[k]>0).map(k=>`${ITEMS[k].name} ${S.bag[k]}`).join(' · ')||'비어 있음'; }
+function bagNote(){ return ITEM_ORDER.filter(k=>S.bag[k]>0).map(k=>`${ITEMS[k].name} ${S.bag[k]}`).join(' · ')||'비어 있음'; }
 function partyMenu(sel){
   const items=S.party.map((m,i)=>({label:`${i+1}. ${E.name(m)}`,note:monNote(m),fn:()=>{ if(sel!==undefined){ if(sel!==i){ E.swapParty(S,sel,i); log(`${E.name(S.party[i])}을(를) ${i+1}번째로 옮겼다.`); hud(); } partyMenu(); return; }
-    openMenu(`${E.name(m)} · ${SPECIES.find(s=>s.key===m.key).from}`,[{label:'순서 바꾸기',note:'바꿀 자리를 고른다',off:S.party.length<2,fn:()=>partyMenu(i)},{label:'상처약 쓰기',note:`${S.bag.potion||0}개`,off:!(S.bag.potion>0),fn:()=>{ log(E.useOutside(S,'potion',i)); hud(); partyMenu(); }},{label:'좋은상처약 쓰기',note:`${S.bag.superpotion||0}개`,off:!(S.bag.superpotion>0),fn:()=>{ log(E.useOutside(S,'superpotion',i)); hud(); partyMenu(); }},['돌아가기',partyMenu]],partyMenu); }}));
+    openMenu(`${E.name(m)} · ${SPECIES.find(s=>s.key===m.key).from}`,[{label:'순서 바꾸기',note:'바꿀 자리를 고른다',off:S.party.length<2,fn:()=>partyMenu(i)},{label:'상처약 쓰기',note:`${S.bag.potion||0}개`,off:!(S.bag.potion>0),fn:()=>{ log(E.useOutside(S,'potion',i)); hud(); partyMenu(); }},{label:'좋은상처약 쓰기',note:`${S.bag.superpotion||0}개`,off:!(S.bag.superpotion>0),fn:()=>{ log(E.useOutside(S,'superpotion',i)); hud(); partyMenu(); }},{label:'최고상처약 쓰기',note:`${S.bag.hyperpotion||0}개`,off:!(S.bag.hyperpotion>0),fn:()=>{ log(E.useOutside(S,'hyperpotion',i)); hud(); partyMenu(); }},['돌아가기',partyMenu]],partyMenu); }}));
   openMenu(sel!==undefined?`${E.name(S.party[sel])}을(를) 어디로?`:'동현몬',items,sel!==undefined?()=>partyMenu():mainMenu);
 }
-function bagMenu(){ const list=['ball','potion','superpotion'].filter(k=>S.bag[k]>0); openMenu('가방',list.length?list.map(k=>({label:`${ITEMS[k].name} ×${S.bag[k]}`,note:ITEMS[k].desc,fn:()=>{ if(!ITEMS[k].heal){ log('동현볼은 전투 중에만 던질 수 있다.'); mainMenu(); return; } openMenu(`${ITEMS[k].name}을(를) 누구에게?`,S.party.map((m,i)=>({label:E.name(m),note:`체력 ${m.hp}/${m.maxhp}`,fn:()=>{ log(E.useOutside(S,k,i)); hud(); bagMenu(); }})),bagMenu); }})):[{label:'가방이 비었다',note:'동현시 가게에서 살 수 있다',fn:mainMenu}],mainMenu); }
+function bagMenu(){ const list=ITEM_ORDER.filter(k=>S.bag[k]>0); openMenu('가방',list.length?list.map(k=>({label:`${ITEMS[k].name} ×${S.bag[k]}`,note:ITEMS[k].desc,fn:()=>{ if(!ITEMS[k].heal){ log('동현볼은 전투 중에만 던질 수 있다.'); mainMenu(); return; } openMenu(`${ITEMS[k].name}을(를) 누구에게?`,S.party.map((m,i)=>({label:E.name(m),note:`체력 ${m.hp}/${m.maxhp}`,fn:()=>{ log(E.useOutside(S,k,i)); hud(); bagMenu(); }})),bagMenu); }})):[{label:'가방이 비었다',note:'동현시 가게에서 살 수 있다',fn:mainMenu}],mainMenu); }
 function dexMenu(){ openMenu(`도감 · 잡은 ${Object.keys(S.dex.caught).length} / 본 ${Object.keys(S.dex.seen).length} / 전체 ${SPECIES.length}`,SPECIES.map(sp=>{ const c=S.dex.caught[sp.key], s=S.dex.seen[sp.key]; return {label:`${String(sp.id).padStart(2,'0')} ${c?sp.name:s?sp.name+' (본 적 있음)':'???'}`,note:c?`${sp.from} · ${sp.desc}`:s?sp.from:'',off:!s,fn:dexMenu}; }).concat([['돌아가기',mainMenu]]),mainMenu); }
 
 /* ---------- 저장·불러오기: 동현전·동현워와 같은 브라우저 칸 3개 + .dhsave 파일 ---------- */
@@ -216,7 +217,11 @@ function restore(data){
   if(!st.hero||!(Number.isInteger(st.hero.tx)&&st.hero.tx>=0&&st.hero.tx<grid[0].length&&Number.isInteger(st.hero.ty)&&st.hero.ty>=0&&st.hero.ty<grid.length)) throw new Error('주인공 위치가 맞지 않는다.');
   if(!Array.isArray(st.party)||!st.party.length||st.party.length>E.PARTY||st.party.some(m=>!E.species(m.key)||!(m.lv>=1&&m.lv<=E.MAXLV)||!Array.isArray(m.moves)||m.moves.some(k=>!MOVES[k]))) throw new Error('동현몬 정보가 맞지 않는다.');
   if(!Array.isArray(st.box)||st.box.some(m=>!E.species(m.key))) throw new Error('상자 정보가 맞지 않는다.');
-  if(!Array.isArray(st.npcs)||st.npcs.length!==NPCS.length||st.npcs.some((n,i)=>n.id!==NPCS[i].id)) throw new Error('마을 사람 정보가 맞지 않는다.');
+  if(!Array.isArray(st.npcs)||st.npcs.some(n=>!n||typeof n.id!=='string')) throw new Error('마을 사람 정보가 맞지 않는다.');
+  /* 사람 목록은 id로 맞춘다: 옛 판(v0.17 이전)의 저장도 새 세계의 사람과 합쳐 읽는다. 저장에 없는 사람은 제자리에 새로 선다 */
+  { const fresh=E.newGame({startMap:1}).npcs, old=new Map(st.npcs.map(n=>[n.id,n]));
+    st.npcs=fresh.map(n=>{ const o=old.get(n.id); if(!o) return n; const keep={beaten:!!o.beaten,gateOpen:!!o.gateOpen,map:o.map===null?null:n.map}; if(Number.isInteger(o.tx)&&Number.isInteger(o.ty)){ keep.tx=o.tx; keep.ty=o.ty; keep.x=o.tx*E.T; keep.y=o.ty*E.T; keep.hx=Number.isInteger(o.hx)?o.hx:o.tx; keep.hy=Number.isInteger(o.hy)?o.hy:o.ty; } if(o.dir&&E.DIRS[o.dir]) keep.dir=o.dir; return {...n,...keep,moving:0,t:0,bang:0}; }); }
+  if(!Number.isInteger(st.badge)||st.badge<0||st.badge>3) st.badge=Math.max(0,Math.min(3,st.badge|0));
   if(!(Number.isInteger(st.money)&&st.money>=0)) throw new Error('소지금 정보가 맞지 않는다.');
   if(st.status!=='play') throw new Error('이미 끝난 판이다.');
   if(st.mode!=='world'||st.battle||st.dialog) throw new Error('전투·대화 중에 만든 저장은 불러올 수 없다.');
@@ -285,18 +290,18 @@ function keyDown(k){
   if(menu){ if(k==='up'||k==='down'){ const n=menu.items.length; menu.i=(menu.i+(k==='up'?-1:1)+n)%n; drawMenu(); } else if(k==='x'||k==='enter'){ pick(); } else if(k==='z'){ cancelMenu(); } return; }
   if(k==='up'||k==='down'||k==='left'||k==='right'){ keys[k]=true; keys[k+'Pressed']=true; }
   else if(k==='x') keys.aPressed=true;
-  else if(k==='z') keys.bPressed=true;
+  else if(k==='z'){ keys.bPressed=true; keys.b=true; } /* Z를 누른 채 걸으면 달린다 */
   else if(k==='s'){ if(S.mode==='world') partyMenu(); }
   else if(k==='a'){ const m=S.party[0]; toast(`${MAPS[S.map].name} · ${E.name(m)} Lv${m.lv} 체력 ${m.hp}/${m.maxhp} · ${S.money}원 · 동현볼 ${S.bag.ball||0}`); }
   else if(k==='enter') mainMenu();
 }
-function keyUp(k){ if(k==='up'||k==='down'||k==='left'||k==='right') keys[k]=false; }
+function keyUp(k){ if(k==='up'||k==='down'||k==='left'||k==='right') keys[k]=false; else if(k==='z') keys.b=false; }
 document.querySelectorAll('#touchpad [data-key]').forEach(b=>{
   const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',x:'x',z:'z',s:'s',a:'a',Enter:'enter'}[b.dataset.key];
   b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keyDown(m);});
   const up=e=>{e.preventDefault();keyUp(m);}; b.addEventListener('pointerup',up); b.addEventListener('pointercancel',up); b.addEventListener('lostpointercapture',up);
 });
-addEventListener('blur',()=>{ keys.up=keys.down=keys.left=keys.right=false; });
+addEventListener('blur',()=>{ keys.up=keys.down=keys.left=keys.right=keys.b=false; });
 
 /* ---------- 시험용 연결 ---------- */
 window.render_game_to_text=()=>JSON.stringify(S?{mode,paused,status:S.status,map:S.map,gameMode:S.mode,hero:{tx:S.hero.tx,ty:S.hero.ty,dir:S.hero.dir},pet:S.petHidden?null:{tx:S.pet.tx,ty:S.pet.ty},

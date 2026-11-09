@@ -4,7 +4,7 @@
 'use strict';
 const D=root.DATA, {T,SOLID,CHART,MOVES,SPECIES,ITEMS,PERSONALITY,MAPS,START,NPCS}=D;
 const DIRS={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}, BACK={up:'down',down:'up',left:'right',right:'left'};
-const STEP=8, MAXLV=50, PARTY=6;
+const STEP=8, RUN=4, MAXLV=50, PARTY=6;
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 const species=key=>SPECIES.find(s=>s.key===key);
 const expFor=lv=>lv*lv*lv;
@@ -49,8 +49,9 @@ function occupied(S,tx,ty,self){
   return null;
 }
 function walkable(S,tx,ty,self){ const t=tile(S,tx,ty); if(SOLID[t]) return false; return !occupied(S,tx,ty,self); }
-function startMove(e,dir){ const [dx,dy]=DIRS[dir]; e.dir=dir; e.tx+=dx; e.ty+=dy; e.moving=STEP; e.fx=dx; e.fy=dy; }
-function tickMove(e){ if(e.moving>0){ e.moving--; e.x=e.tx*T-e.fx*e.moving*(T/STEP); e.y=e.ty*T-e.fy*e.moving*(T/STEP); e.anim++; if(e.moving===0){ e.x=e.tx*T; e.y=e.ty*T; return true; } } return false; }
+/* len: 한 칸을 가는 틀 수. 걷기 8, 달리기(Z 누른 채) 4 */
+function startMove(e,dir,len){ const [dx,dy]=DIRS[dir]; e.dir=dir; e.tx+=dx; e.ty+=dy; e.len=len||STEP; e.moving=e.len; e.fx=dx; e.fy=dy; }
+function tickMove(e){ if(e.moving>0){ const L=e.len||STEP; e.moving--; e.x=e.tx*T-e.fx*e.moving*(T/L); e.y=e.ty*T-e.fy*e.moving*(T/L); e.anim++; if(e.moving===0){ e.x=e.tx*T; e.y=e.ty*T; return true; } } return false; }
 
 /* ---------- 한 틀 ---------- */
 function step(S,keys){
@@ -68,18 +69,18 @@ function heroTick(S,keys){
     if(keys.aPressed){ interact(S); }
     else { const want=keys.up?'up':keys.down?'down':keys.left?'left':keys.right?'right':null;
       if(want){ h.dir=want; const [dx,dy]=DIRS[want];
-        if(walkable(S,h.tx+dx,h.ty+dy,h)){ petFollow(S); startMove(h,want); S.steps++; if((S.steps&1)===0) S.events.push({t:'step'}); }
+        if(walkable(S,h.tx+dx,h.ty+dy,h)){ const len=keys.b?RUN:STEP; petFollow(S,len); startMove(h,want,len); S.steps++; if((S.steps&1)===0) S.events.push({t:'step'}); }
         else { h.anim++; if(S.frame%24===0) S.events.push({t:'bump'}); } } }
   }
   if(S.pet.moving>0) tickMove(S.pet);
 }
-function petFollow(S){ const h=S.hero, p=S.pet; if(S.petHidden){ S.petHidden=false; p.tx=h.tx; p.ty=h.ty; p.x=h.x; p.y=h.y; p.dir=h.dir; return; }
-  if(p.tx===h.tx&&p.ty===h.ty) return; const dx=h.tx-p.tx, dy=h.ty-p.ty; const dir=dx>0?'right':dx<0?'left':dy>0?'down':'up'; p.tx=h.tx; p.ty=h.ty; p.dir=dir; p.moving=STEP; p.fx=Math.sign(dx); p.fy=Math.sign(dy); }
+function petFollow(S,len){ const h=S.hero, p=S.pet; if(S.petHidden){ S.petHidden=false; p.tx=h.tx; p.ty=h.ty; p.x=h.x; p.y=h.y; p.dir=h.dir; return; }
+  if(p.tx===h.tx&&p.ty===h.ty) return; const dx=h.tx-p.tx, dy=h.ty-p.ty; const dir=dx>0?'right':dx<0?'left':dy>0?'down':'up'; p.tx=h.tx; p.ty=h.ty; p.dir=dir; p.len=len||STEP; p.moving=p.len; p.fx=Math.sign(dx); p.fy=Math.sign(dy); }
 function arrived(S){
   const h=S.hero, m=map(S);
   const w=(m.warps||[]).find(w=>w.x===h.tx&&w.y===h.ty);
   if(w){ warp(S,w); return; }
-  if(tile(S,h.tx,h.ty)==='t'&&S.rate>0&&m.wild){ if(S.rng()<0.1*S.rate){ const zone=m.wild.find(z=>h.ty<=z.maxY)||m.wild[m.wild.length-1]; const tot=zone.table.reduce((a,b)=>a+b[1],0); let r=S.rng()*tot, key=zone.table[0][0]; for(const [k,wt] of zone.table){ if(r<wt){ key=k; break; } r-=wt; } const lv=zone.lv[0]+Math.floor(S.rng()*(zone.lv[1]-zone.lv[0]+1)); startBattle(S,{kind:'wild',foes:[makeMon(key,lv)]}); return; } }
+  if(tile(S,h.tx,h.ty)==='t'&&S.rate>0&&m.wild){ if(S.rng()<0.1*S.rate){ const zone=m.wild.find(z=>h.ty<=(z.maxY??999)&&h.tx<=(z.maxX??999))||m.wild[m.wild.length-1]; const tot=zone.table.reduce((a,b)=>a+b[1],0); let r=S.rng()*tot, key=zone.table[0][0]; for(const [k,wt] of zone.table){ if(r<wt){ key=k; break; } r-=wt; } const lv=zone.lv[0]+Math.floor(S.rng()*(zone.lv[1]-zone.lv[0]+1)); startBattle(S,{kind:'wild',foes:[makeMon(key,lv)]}); return; } }
   for(const n of S.npcs){ if(n.map!==S.map||!n.trainer||n.beaten||!n.sight) continue; if(sees(S,n,h)){ engage(S,n); return; } }
 }
 function sees(S,n,h){ const [dx,dy]=DIRS[n.dir]; for(let i=1;i<=n.sight;i++){ const tx=n.tx+dx*i, ty=n.ty+dy*i; if(tx===h.tx&&ty===h.ty) return true; if(SOLID[tile(S,tx,ty)]||occupied(S,tx,ty,n)) return false; } return false; }
@@ -134,6 +135,13 @@ function interact(S){
 }
 function talk(S,n){
   if(n.trainer){ if(n.beaten) say(S,n.after); else engage(S,n); return; }
+  if(n.gate){ /* 문지기: 배지가 모자라면 막고, 넉넉하면 옆으로 비킨다 */
+    if(n.gateOpen){ say(S,n.gate.open); return; }
+    if(S.badge>=n.gate.badge){ say(S,n.text.concat(n.gate.open),()=>{ n.gateOpen=true; n.tx=n.gate.aside.x; n.ty=n.gate.aside.y; n.x=n.tx*T; n.y=n.ty*T; n.hx=n.tx; n.hy=n.ty; n.moving=0; n.dir='down'; S.events.push({t:'pop'}); S.log.push(`${n.id==='gatew'?'호숫길':'신중동역'} 길이 열렸다`); }); }
+    else say(S,n.text.concat(n.gate.closed));
+    return; }
+  if(n.ask){ /* 묻는 사람: 고르면 답이 다르다 */
+    say(S,n.text,()=>say(S,[n.ask.q],()=>choice(S,n.ask.items,(i)=>{ say(S,[n.ask.ans[i<0?n.ask.items.length-1:i]]); }))); return; }
   if(n.heal){ const its=n.box?['네, 부탁해요','상자를 연다','아니요']:['네, 부탁해요','아니요']; say(S,n.text,()=>choice(S,its,i=>{ if(n.box&&i===1){ boxMenu(S); return; } if(i===0){ healParty(S); S.lastHeal={map:S.backDoor?S.backDoor.map:S.map,x:S.hero.tx,y:S.hero.ty,dir:'down'}; if(S.backDoor) S.lastHeal={...S.backDoor}; S.events.push({t:'heal'}); say(S,['동현몬이 모두 건강해졌어요.\n또 오세요!']); } else say(S,['또 오세요!']); })); return; }
   if(n.shop){ say(S,n.text,()=>shopMenu(S,n)); return; }
   if(n.gift){ const k='gift:'+n.id; if(!S.flags[k]){ say(S,n.text,()=>{ S.flags[k]=1; S.bag[n.gift.item]=(S.bag[n.gift.item]||0)+n.gift.n; S.events.push({t:'item'}); say(S,[`${ITEMS[n.gift.item].name} ${n.gift.n}개를 받았다!`].concat(n.after||[])); }); } else if(n.box) say(S,n.after,()=>choice(S,['상자를 연다','그만둔다'],i=>{ if(i===0) boxMenu(S); })); else say(S,n.after); return; }
@@ -234,7 +242,7 @@ function battleTick(S,keys){
       S.events.push({t:'pop'}); B.phase='q'; if(B.forced){ B.forced=false; B.me=B.pcur; mine(S,B).st={atk:0,def:0,spd:0}; msg(B,`가라! ${name(m)}!`); B.q.push({t:'menu'}); } else turn(S,B,{type:'switch',i:B.pcur}); }
     return; }
 }
-function bagList(S){ return ['ball','potion','superpotion'].filter(k=>S.bag[k]>0); }
+function bagList(S){ return D.ITEM_ORDER.filter(k=>S.bag[k]>0); }
 function tryRun(S,B){
   B.phase='q';
   if(B.kind==='trainer'){ msg(B,'트레이너 승부에서는 도망칠 수 없다!'); B.q.push({t:'menu'}); return; }
@@ -249,8 +257,11 @@ function turn(S,B,act){
   if(first){ useMove(S,B,'me',act.key); foeAct(S,B); } else { foeAct(S,B); useMove(S,B,'me',act.key); }
   B.q.push({t:'menu'});
 }
-function foeAct(S,B){ B.q.push({t:'fn',fn:()=>{ const f=foe(B), me=mine(S,B); if(f.hp<=0||me.hp<=0) return; const dmg=f.moves.filter(k=>MOVES[k].pow); let pick=f.moves[Math.floor(S.rng()*f.moves.length)];
-  if(dmg.length&&S.rng()<0.6){ const sup=dmg.filter(k=>effect(MOVES[k].type,species(me.key).types)>1); pick=(sup.length&&S.rng()<0.7?sup:dmg)[Math.floor(S.rng()*(sup.length&&S.rng()<0.7?sup:dmg).length)]||pick; }
+/* 상대 AI: 보조기는 같은 능력을 두 단계까지만 쓴다. 그 뒤로는 공격기만 고른다 */
+function foeAct(S,B){ B.q.push({t:'fn',fn:()=>{ const f=foe(B), me=mine(S,B); if(f.hp<=0||me.hp<=0) return; const dmg=f.moves.filter(k=>MOVES[k].pow);
+  const useful=k=>{ const m=MOVES[k]; if(m.pow) return true; if(!m.stat) return true; const t=m.target==='self'?f:me; return m.d>0?t.st[m.stat]<2:t.st[m.stat]>-2; };
+  const pool=f.moves.filter(useful); let pick=(pool.length?pool:f.moves)[Math.floor(S.rng()*(pool.length?pool:f.moves).length)];
+  if(dmg.length&&(S.rng()<0.6||!MOVES[pick].pow&&!useful(pick))){ const sup=dmg.filter(k=>effect(MOVES[k].type,species(me.key).types)>1); pick=(sup.length&&S.rng()<0.7?sup:dmg)[Math.floor(S.rng()*(sup.length&&S.rng()<0.7?sup:dmg).length)]||pick; }
   const q=B.q; B.q=[]; useMove(S,B,'foe',pick); B.q=B.q.concat(q); }}); }
 function useMove(S,B,who,key){
   B.q.push({t:'fn',fn:()=>{ const user=who==='me'?mine(S,B):foe(B), tgt=who==='me'?foe(B):mine(S,B); if(user.hp<=0||tgt.hp<=0) return;
@@ -273,6 +284,8 @@ function faint(S,B,who){
   if(who==='foe'){ const f=foe(B), me=mine(S,B); S.events.push({t:'faint'}); q.push({t:'msg',text:`${B.kind==='wild'?'야생 ':'상대 '}${name(f)}은(는) 쓰러졌다!`});
     const gain=Math.floor(species(f.key).exp*f.lv/7*(B.kind==='trainer'?1.5:1));
     q.push({t:'msg',text:`${name(me)}은(는) ${gain}의 경험치를 얻었다!`},{t:'exp',from:me.exp,to:me.exp+gain},{t:'fn',fn:()=>levelUps(S,B,me)});
+    /* 경험치 나누기: 싸우지 않은 동료도 절반을 받는다. 여럿을 고루 키우기 쉽게 */
+    const others=S.party.filter(m=>m!==me&&m.hp>0&&m.lv<MAXLV); if(others.length){ const half=Math.floor(gain/2); q.push({t:'msg',text:`동료들도 경험치를 ${half}씩 나눠 받았다!`}); for(const o of others) q.push({t:'fn',fn:()=>{ o.exp+=half; levelUps(S,B,o); }}); }
     q.push({t:'fn',fn:()=>{ if(B.kind==='trainer'&&B.fi+1<B.foes.length){ B.fi++; S.dex.seen[foe(B).key]=1; B.q=[{t:'msg',text:`${B.npc.trainer.name}은(는) ${name(foe(B))}을(를) 내보냈다!`},{t:'menu'}].concat(B.q.filter(x=>x.t!=='menu')); }
       else if(B.kind==='trainer'){ const tr=B.npc.trainer; B.q=[{t:'msg',text:`${tr.name}과(와)의 승부에서 이겼다!`},{t:'fn',fn:()=>{ S.money+=tr.reward; S.events.push({t:'money'}); }},{t:'msg',text:`상금으로 ${tr.reward}원을 받았다!`},{t:'end',result:'win'}]; }
       else B.q=[{t:'end',result:'win'}]; }});
@@ -307,7 +320,7 @@ function endBattle(S,r){
   const B=S.battle; for(const m of S.party) m.st={atk:0,def:0,spd:0};
   S.battle=null; S.mode='world'; S.events.push({t:'battleEnd',result:r.result,kind:B.kind});
   if(r.result==='lose'){ const lose=Math.floor(S.money/2); S.money-=lose; const h=S.lastHeal; S.fade=20; S.after=()=>{ S.map=h.map; S.hero.tx=h.x; S.hero.ty=h.y; S.hero.x=h.x*T; S.hero.y=h.y*T; S.hero.dir=h.dir; S.hero.moving=0; S.petHidden=true; healParty(S); S.fadeIn=14; say(S,[`눈앞이 캄캄해졌다… 서둘러 ${MAPS[h.map].name}으로 돌아왔다.`+(lose>0?`\n${lose}원을 잃어버렸다.`:'')]); }; return; }
-  if(B.kind==='trainer'&&r.result==='win'){ const n=B.npc; n.beaten=true; S.log.push(`${n.trainer.name} 승리`); const done=()=>{ if(n.trainer.boss){ S.badge=1; S.status='win'; S.events.push({t:'win'}); } };
+  if(B.kind==='trainer'&&r.result==='win'){ const n=B.npc; n.beaten=true; S.log.push(`${n.trainer.name} 승리`); const done=()=>{ if(n.trainer.badge){ S.badge++; S.events.push({t:'badge',n:S.badge}); S.log.push(`배지 ${S.badge}개`); } if(n.trainer.final){ S.status='win'; S.events.push({t:'win'}); } if(n.trainer.flee){ n.map=null; S.events.push({t:'pop'}); } };
     S.pendingSay={pages:n.after,done}; }
 }
 function tickPending(S){ if(S.pendingSay&&!S.dialog&&!S.battle&&S.fade===0){ const p=S.pendingSay; S.pendingSay=null; say(S,p.pages,p.done); } }
@@ -316,5 +329,5 @@ step=function(S,keys){ _step(S,keys); tickPending(S); if(S.fadeIn>0) S.fadeIn--;
 /* 바깥 가방 쓰기(메뉴) */
 function useOutside(S,key,pi){ const m=S.party[pi], it=ITEMS[key]; if(!it.heal||!(S.bag[key]>0)) return '쓸 수 없다.'; if(m.hp<=0) return `${name(m)}은(는) 쓰러져 있어 상처약이 듣지 않는다.`; if(m.hp>=m.maxhp) return `${name(m)}의 체력은 이미 가득하다.`; S.bag[key]--; m.hp=Math.min(m.maxhp,m.hp+it.heal); S.events.push({t:'heal'}); return `${name(m)}의 체력이 ${m.hp}/${m.maxhp}이 되었다.`; }
 function swapParty(S,i,j){ if(S.battle) return false; const t=S.party[i]; S.party[i]=S.party[j]; S.party[j]=t; return true; }
-root.Engine={newGame,step,startBattle,boxMenu,rng:mulberry32,josa,makeMon,calcStats,expFor,species,name,effect,useOutside,swapParty,map,tile,T,MAXLV,PARTY,DIRS};
+root.Engine={newGame,step,RUN,STEP,startBattle,boxMenu,rng:mulberry32,josa,makeMon,calcStats,expFor,species,name,effect,useOutside,swapParty,map,tile,T,MAXLV,PARTY,DIRS};
 })(window);
