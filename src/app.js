@@ -26,7 +26,7 @@ $('#mon-grid').innerHTML=SPECIES.map(sp=>`<article><h4>${String(sp.id).padStart(
 $('#type-table').innerHTML='<thead><tr><th>공격 ↓ / 방어 →</th>'+Object.values(TYPES).map(t=>`<th>${t}</th>`).join('')+'</tr></thead><tbody>'+Object.keys(TYPES).map(a=>`<tr><th>${TYPES[a]}</th>`+Object.keys(TYPES).map(d=>{const e=E.effect(a,[d]);return `<td class="${e>1?'eff-up':e<1?'eff-dn':''}">${e===1?'·':e>1?'2배':e===0?'0':'½'}</td>`;}).join('')+'</tr>').join('')+'</tbody>';
 
 /* ---------- 동현랭 편집기(동현랭 시리즈와 같은 모양) ---------- */
-for(const ex of examples){const o=document.createElement('option');o.value=ex.id;o.textContent=ex.title;$('#example').append(o);}
+{ let grp=null; for(const ex of examples){ if(!grp||grp.label!==ex.group){ grp=document.createElement('optgroup'); grp.label=ex.group; $('#example').append(grp); } const o=document.createElement('option');o.value=ex.id;o.textContent=ex.title;grp.append(o);} }
 const DH_TOKEN=/(ㅋㅋ.*$)|(나는 동현이냐\?|동현이구나)|(오겡끼데스까)|(신중동역|신중동|뭉치)|(뿡뿡뿡|뿡뿡|포동이)|(꽥꽥)|(동+현아)|(동+현)|(도오*옹)|(ㅠ+)|(뚱띠|또치)/g;
 const DH_CLS=[null,'t-cmt','t-frame','t-halt','t-ctl','t-out','t-in','t-assign','t-var','t-num','t-minus','t-op'];
 function dhLine(line){let html='',last=0;line.replace(DH_TOKEN,(m,...gr)=>{const idx=gr[gr.length-2];html+=esc(line.slice(last,idx));const k=gr.slice(0,11).findIndex(x=>x!==undefined)+1;html+=`<span class="${DH_CLS[k]}">${esc(m)}</span>`;last=idx+m.length;return m;});return html+esc(line.slice(last));}
@@ -58,19 +58,19 @@ $('#run').onclick=()=>sortie();
 
 
 
-/* ---------- 출전 규약: 1 시작 마을 · 2 포동이 성격 · 3 야생 출현율 · 4 소지금 · 5 시드 · 6 출전 ---------- */
-const DEFAULT={startMap:1,pers:1,rate:1,money:1000,seed:1};
+/* ---------- 출전 규약: 1 시작 마을 · 2 포동이 성격 · 3 야생 출현율 · 4 소지금 · 5 시드 · 6 출전 · 7 포동이 레벨 · 8 동료 슈슈 레벨 ---------- */
+const DEFAULT={startMap:1,pers:1,rate:1,money:1000,seed:1,lv:5,shushu:0};
 let cfg={...DEFAULT};
 function parseSortie(out){
   const tok=out.split(/\s+/).filter(Boolean).map(Number), c={...DEFAULT}, err=[];
   let go=false;
-  const rule={1:['시작 마을','startMap',v=>Number.isInteger(v)&&v>=1&&v<=5,'1 하얀마을 · 2 산책로 · 3 동현시 · 4 뿡뿡항 · 5 꽥꽥마을'],2:['포동이 성격','pers',v=>Number.isInteger(v)&&v>=1&&v<=5,'1~5'],3:['야생 출현율','rate',v=>Number.isInteger(v)&&v>=0&&v<=5,'0(없음)~5'],4:['소지금','money',v=>Number.isInteger(v)&&v>=0&&v<=9999,'0~9999'],5:['시드','seed',v=>Number.isInteger(v)&&Math.abs(v)<=1e9,'정수']};
+  const rule={1:['시작 마을','startMap',v=>Number.isInteger(v)&&v>=1&&v<=5,'1 하얀마을 · 2 산책로 · 3 동현시 · 4 뿡뿡항 · 5 꽥꽥마을'],2:['포동이 성격','pers',v=>Number.isInteger(v)&&v>=1&&v<=5,'1~5'],3:['야생 출현율','rate',v=>Number.isInteger(v)&&v>=0&&v<=5,'0(없음)~5'],4:['소지금','money',v=>Number.isInteger(v)&&v>=0&&v<=9999,'0~9999'],5:['시드','seed',v=>Number.isInteger(v)&&Math.abs(v)<=1e9,'정수'],7:['포동이 레벨','lv',v=>Number.isInteger(v)&&v>=1&&v<=E.MAXLV,`1~${E.MAXLV}`],8:['동료 슈슈 레벨','shushu',v=>Number.isInteger(v)&&v>=0&&v<=E.MAXLV,`0(없음)~${E.MAXLV}`]};
   for(let i=0;i<tok.length;i++){
     const n=tok[i];
     if(go){ err.push(`출전 명령 6 뒤에 ${tok.length-i}개의 정수가 더 나왔다. 6은 마지막에 출력하자.`); break; }
     if(n===6){ go=true; continue; }
     const r=rule[n];
-    if(!r){ err.push(`${i+1}번째 정수 ${n}은 출전 명령이 아니다. 명령은 1 시작 마을 · 2 성격 · 3 출현율 · 4 소지금 · 5 시드 · 6 출전이다.`); break; }
+    if(!r){ err.push(`${i+1}번째 정수 ${n}은 출전 명령이 아니다. 명령은 1 시작 마을 · 2 성격 · 3 출현율 · 4 소지금 · 5 시드 · 6 출전 · 7 포동이 레벨 · 8 동료 슈슈 레벨이다.`); break; }
     if(i+1>=tok.length){ err.push(`명령 ${n}(${r[0]}) 뒤에 값이 없다.`); break; }
     const v=tok[++i];
     if(!r[2](v)){ err.push(`${r[0]} 값 ${v}은 쓸 수 없다. ${r[3]}만 된다.`); break; }
@@ -80,7 +80,7 @@ function parseSortie(out){
 }
 const rateName=r=>['없음','기본','조금 많음','많음','아주 많음','우글우글'][r];
 function sortieCard(c){
-  $('#sortie-card').innerHTML=[['시작 마을',`${c.startMap} · ${START[c.startMap].name}`],['포동이 성격',`${c.pers} · ${PERSONALITY[c.pers].name}`],['야생 출현율',`${c.rate} · ${rateName(c.rate)}`],['소지금',c.money.toLocaleString('ko-KR')+'원'],['시드',String(c.seed)],['조작','X 확인 · Z 취소 · ↵ 메뉴']].map(([a,b])=>`<div><span>${a}</span><strong>${b}</strong></div>`).join('');
+  $('#sortie-card').innerHTML=[['시작 마을',`${c.startMap} · ${START[c.startMap].name}`],['포동이 성격',`${c.pers} · ${PERSONALITY[c.pers].name}`],['야생 출현율',`${c.rate} · ${rateName(c.rate)}`],['소지금',c.money.toLocaleString('ko-KR')+'원'],['시드',String(c.seed)],['포동이 레벨',`Lv${c.lv}`],['동료 슈슈',c.shushu>0?`Lv${c.shushu} 함께`:'없음'],['조작','X 확인 · Z 취소 · ↵ 메뉴']].map(([a,b])=>`<div><span>${a}</span><strong>${b}</strong></div>`).join('');
 }
 function result(text,kind){ const r=$('#result'); r.textContent=text; r.dataset.kind=kind||''; }
 function status(t,kind){ const s=$('#status'); s.textContent=t; s.dataset.kind=kind||''; }
@@ -94,7 +94,7 @@ function sortie(){
   const p=parseSortie(out);
   if(p.err.length){ result('출전 규약 오류: '+p.err[0],'error'); status('출전 규약 오류','error'); return; }
   cfg=p.c; sortieCard(cfg); preview(cfg);
-  if(!p.go){ result(`설정을 읽었다(${START[cfg.startMap].name} · ${PERSONALITY[cfg.pers].name} · 출현율 ${cfg.rate} · ${cfg.money}원 · 시드 ${cfg.seed}). 출전 명령 6을 마지막에 출력하면 나선다.`); status('설정만 읽음'); return; }
+  if(!p.go){ result(`설정을 읽었다(${START[cfg.startMap].name} · ${PERSONALITY[cfg.pers].name} · 출현율 ${cfg.rate} · ${cfg.money}원 · 시드 ${cfg.seed} · 포동이 Lv${cfg.lv}${cfg.shushu>0?` · 슈슈 Lv${cfg.shushu}`:''}). 출전 명령 6을 마지막에 출력하면 나선다.`); status('설정만 읽음'); return; }
   startGame(cfg);
 }
 
@@ -104,7 +104,7 @@ const keys={up:false,down:false,left:false,right:false,b:false,upPressed:false,d
 function clearPressed(){ keys.upPressed=keys.downPressed=keys.leftPressed=keys.rightPressed=keys.aPressed=keys.bPressed=false; }
 let previewCard=null;
 function preview(c){ previewS=E.newGame({...c}); const m=previewS.party[0];
-  previewCard={title:`${START[c.startMap].name} 출발 · ${PERSONALITY[c.pers].name} 포동이 Lv${m.lv}`,stats:`체력 ${m.maxhp} · 공격 ${m.atk} · 방어 ${m.def} · 속도 ${m.spd}`,world:`야생 출현 ${rateName(c.rate)} · 소지금 ${c.money.toLocaleString('ko-KR')}원 · 시드 ${c.seed}`}; $('#day').textContent=`${START[c.startMap].name} · 미리보기`; $('#tile-info').textContent=`${START[c.startMap].name}에서 포동이와 함께 출발한다. ${PERSONALITY[c.pers].name} 성격 · 출현율 ${rateName(c.rate)}.`; fit(); }
+  previewCard={title:`${START[c.startMap].name} 출발 · ${PERSONALITY[c.pers].name} 포동이 Lv${m.lv}`,stats:`체력 ${m.maxhp} · 공격 ${m.atk} · 방어 ${m.def} · 속도 ${m.spd}`,world:`야생 출현 ${rateName(c.rate)} · 소지금 ${c.money.toLocaleString('ko-KR')}원 · 시드 ${c.seed}${c.shushu>0?` · 슈슈 Lv${c.shushu} 함께`:''}`}; $('#day').textContent=`${START[c.startMap].name} · 미리보기`; $('#tile-info').textContent=`${START[c.startMap].name}에서 포동이와 함께 출발한다. ${PERSONALITY[c.pers].name} 성격 · 출현율 ${rateName(c.rate)}.`; fit(); }
 function fit(){
   if(!canvas.width) return;
   const full=document.getElementById('stage-full');
@@ -166,7 +166,7 @@ function liveUI(){ $('#setup-panel').hidden=true; $('#hud').hidden=false; $('#bo
 function startGame(c){
   S=E.newGame({...c}); mode='play'; paused=false; closeMenu(); $('#result-card').hidden=true; lastMap=null;
   liveUI(); $('#board-wrap').scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'});
-  $('#log').innerHTML=''; log(`${START[c.startMap].name}에서 출발. 포동이 ${PERSONALITY[c.pers].name} · 출현율 ${rateName(c.rate)} · ${c.money}원 · 시드 ${c.seed}.`);
+  $('#log').innerHTML=''; log(`${START[c.startMap].name}에서 출발. 포동이 Lv${S.party[0].lv} ${PERSONALITY[c.pers].name}${c.shushu>0?` · 슈슈 Lv${c.shushu} 함께`:''} · 출현율 ${rateName(c.rate)} · ${c.money}원 · 시드 ${c.seed}.`);
   $('#hint').innerHTML=HINT0; status('진행 중'); hud();
 }
 function backToSetup(){
@@ -228,7 +228,7 @@ function restore(data){
   st.events=[]; st.rng=E.rng(((st.seed|0)*7919+13+(st.steps|0)*31)|0); st.fade=0; st.fadeIn=0; st.after=null; st.pendingSay=null; st.approach=null; st.cam=st.cam||{x:0,y:0};
   for(const m of st.party.concat(st.box)){ m.st=m.st||{atk:0,def:0,spd:0}; E.calcStats(m); m.hp=Math.max(0,Math.min(m.maxhp,m.hp|0)); }
   closeMenu(); $('#result-card').hidden=true;
-  S=st; mode='play'; cfg={startMap:S.startMap,pers:S.pers,rate:S.rate,money:cfg.money,seed:S.seed}; lastMap=S.map; S.mapTitle=110;
+  S=st; mode='play'; cfg={startMap:S.startMap,pers:S.pers,rate:S.rate,money:cfg.money,seed:S.seed,lv:S.lv0||5,shushu:S.shushu0||0}; lastMap=S.map; S.mapTitle=110;
   liveUI(); $('#day').textContent=MAPS[S.map].name;
   const l=$('#log'); l.innerHTML=''; for(const t of (data.logs||[]).slice(-39)) log(String(t).replace(/<[^>]*>/g,''));
   log('저장한 판을 불러왔다.'); $('#hint').innerHTML=HINT0; status('진행 중'); hud();

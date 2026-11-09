@@ -34,10 +34,36 @@ function building(g,m,tx,ty,ch,px,py){
     g.fillStyle='rgba(30,25,20,.22)'; g.fillRect(px+1,py,T-1,3); g.fillRect(px+3,py+3,T-3,1);
   }
 }
-function drawWorld(g,S){ const m=MAPS[S.map], [cx,cy]=camera(S);
+/* 꾸밈(v0.20): 지도 글자는 그대로 두고 그릴 때만 다듬는다.
+   · 풀·긴 풀·나무·꽃·바위는 자리 해시로 모양을 섞는다  · 물은 두 틀이 번갈아 흔들리고 뭍과 닿는 쪽에 물거품 줄
+   · 길·모래는 풀과 닿는 모서리를 둥글게 깎고 가장자리에 옅은 테두리  · 실내 바닥은 격자 */
+const hash=(x,y)=>{ let h=(x*374761393+y*668265263)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
+const VARIANT={',':[.62,.84],'t':[.5],'T':[.5],'F':[.4,.7],'#':[.6]};
+const GRASSY=',tTF#fsoxi', GROUND='.n', WATER='wj';
+function tileKey(ch,tx,ty,frame){
+  if(ch==='w') return (frame>>5)%2?'t_w2':'t_w';
+  if(ch==='_') return (tx+ty)%2?'t__2':'t__';
+  const v=VARIANT[ch]; if(v){ const h=hash(tx,ty); let i=0; while(i<v.length&&h>=v[i]) i++; if(i>0) return 't_'+ch+(i+1); }
+  return 't_'+ch;
+}
+function trim(g,m,tx,ty,ch,px,py){
+  if(GROUND.includes(ch)){
+    const grass=ch2=>GRASSY.includes(ch2), L=grass(at(m,tx-1,ty)), R=grass(at(m,tx+1,ty)), U=grass(at(m,tx,ty-1)), D=grass(at(m,tx,ty+1));
+    const edge=ch==='.'?'#c9ab6d':'#d9c79a', green='#8fd16a';
+    g.fillStyle=edge; if(L) g.fillRect(px,py,1,T); if(R) g.fillRect(px+T-1,py,1,T); if(U) g.fillRect(px,py,T,1); if(D) g.fillRect(px,py+T-1,T,1);
+    g.fillStyle=green; if(L&&U){ g.fillRect(px,py,2,1); g.fillRect(px,py,1,2); } if(R&&U){ g.fillRect(px+T-2,py,2,1); g.fillRect(px+T-1,py,1,2); } if(L&&D){ g.fillRect(px,py+T-1,2,1); g.fillRect(px,py+T-2,1,2); } if(R&&D){ g.fillRect(px+T-2,py+T-1,2,1); g.fillRect(px+T-1,py+T-2,1,2); }
+    g.fillStyle=edge; if(L&&U) g.fillRect(px+1,py+1,1,1); if(R&&U) g.fillRect(px+T-2,py+1,1,1); if(L&&D) g.fillRect(px+1,py+T-2,1,1); if(R&&D) g.fillRect(px+T-2,py+T-2,1,1);
+  } else if(WATER.includes(ch)){
+    const land=ch2=>!WATER.includes(ch2)&&ch2!==' ', L=land(at(m,tx-1,ty)), R=land(at(m,tx+1,ty)), U=land(at(m,tx,ty-1)), D=land(at(m,tx,ty+1));
+    g.fillStyle='#b5dcf2'; if(L) g.fillRect(px,py,1,T); if(R) g.fillRect(px+T-1,py,1,T); if(U) g.fillRect(px,py,T,1); if(D) g.fillRect(px,py+T-1,T,1);
+    g.fillStyle='#e6f3fb'; if(U){ const o=(tx*5+(S_FRAME>>4))%6; g.fillRect(px+o,py+1,2,1); } if(L){ const o=(ty*5+(S_FRAME>>4))%6; g.fillRect(px+1,py+o,1,2); }
+  }
+}
+let S_FRAME=0;
+function drawWorld(g,S){ const m=MAPS[S.map], [cx,cy]=camera(S); S_FRAME=S.frame;
   g.fillStyle='#1a1826'; g.fillRect(0,0,W,H);
   const x0=Math.max(0,Math.floor(cx/T)), y0=Math.max(0,Math.floor(cy/T)), x1=Math.min(m.grid[0].length-1,Math.floor((cx+W)/T)), y1=Math.min(m.grid.length-1,Math.floor((cy+H)/T));
-  for(let ty=y0;ty<=y1;ty++) for(let tx=x0;tx<=x1;tx++){ const ch=m.grid[ty][tx]; const k='t_'+ch; spr(g,SP.has(k)?k:'t_.',tx*T-cx,ty*T-cy); building(g,m,tx,ty,ch,tx*T-cx,ty*T-cy); }
+  for(let ty=y0;ty<=y1;ty++) for(let tx=x0;tx<=x1;tx++){ const ch=m.grid[ty][tx]; const k=tileKey(ch,tx,ty,S.frame); const px=tx*T-cx, py=ty*T-cy; spr(g,SP.has(k)?k:'t_.',px,py); trim(g,m,tx,ty,ch,px,py); building(g,m,tx,ty,ch,px,py); }
   for(const it of (m.items||[])){ if(S.picked[S.map+':'+it.x+':'+it.y]) continue; spr(g,'ball',it.x*T-cx,it.y*T-cy); }
   const ents=[]; for(const n of S.npcs) if(n.map===S.map) ents.push({e:n,key:entKey(n.spr,n,true),bang:n.bang});
   if(!S.petHidden) ents.push({e:S.pet,key:entKey('pet',S.pet,true)});

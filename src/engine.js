@@ -31,11 +31,13 @@ function newGame(o){
   const seed=o.seed||1, rng=mulberry32(seed*7919+13), st=START[o.startMap||1];
   const S={seed,rng,status:'play',mode:'world',frame:0,time:0,steps:0,map:st.map,
     hero:ent(st.x,st.y,st.dir),pet:ent(st.x,st.y,st.dir),petHidden:true,
-    party:[makeMon('podong',5,PERSONALITY[o.pers||1].mod)],box:[],bag:{ball:o.startMap===1?0:5,potion:2,superpotion:0},money:o.money??1000,badge:0,
-    dex:{seen:{podong:1},caught:{podong:1}},flags:{},picked:{},rate:o.rate??1,pers:o.pers||1,startMap:o.startMap||1,
+    party:[makeMon('podong',Math.max(1,Math.min(MAXLV,o.lv||5)),PERSONALITY[o.pers||1].mod)],box:[],bag:{ball:o.startMap===1?0:5,potion:2,superpotion:0},money:o.money??1000,badge:0,
+    dex:{seen:{podong:1},caught:{podong:1}},flags:{},picked:{},rate:o.rate??1,pers:o.pers||1,startMap:o.startMap||1,lv0:o.lv||5,shushu0:o.shushu||0,
     npcs:NPCS.map(n=>({...n,...ent(n.x,n.y,n.dir),hx:n.x,hy:n.y,beaten:false,t:0,bang:0})),
     lastHeal:{map:st.map,x:st.x,y:st.y,dir:st.dir},backDoor:null,
     dialog:null,battle:null,fade:0,events:[],log:[],cam:{x:0,y:0}};
+  /* 출전 규약 8: 동료 슈슈(동현파)를 그 레벨로 데리고 출발한다 */
+  if(o.shushu>0){ S.party.push(makeMon('shushu',Math.min(MAXLV,o.shushu))); S.dex.seen.shushu=1; S.dex.caught.shushu=1; }
   return S;
 }
 function ent(tx,ty,dir){ return {tx,ty,x:tx*T,y:ty*T,dir,moving:0,fx:0,fy:0,anim:0}; }

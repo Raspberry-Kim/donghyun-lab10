@@ -1,11 +1,11 @@
-/* 동현몬 확장 세계 생성기(v0.18): 뚱띠 고개·뿡뿡항·또치 숲·꽥꽥마을·멈춤 길·호숫길·신중동역과 실내 지도를 만들어 src/world.js로 적는다.
+/* 동현몬 확장 세계 생성기(v0.18 · v0.20 꾸밈): 뚱띠 고개·뿡뿡항·또치 숲·꽥꽥마을·멈춤 길·호숫길·신중동역과 실내 지도를 만들어 src/world.js로 적는다.
    node tools/worldgen.cjs  → src/world.js (정적 격자 + 새 사람 목록). 생성 뒤 이어진 길을 BFS로 확인한다.
    지도 글자는 data.js 머리말과 같다. 추가: P 부두 널빤지  n 모래  r 철로(막힘)  S 계단(밟으면 층 이동)
    Z 역 지붕  V 역 벽  O 기둥(막힘)  c 의자(막힘)  q 멈춘 열차(막힘) */
 'use strict';
 const fs=require('fs'), path=require('path');
 function rngOf(seed){ let a=seed|0; return ()=>{ a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-const SOLID='Twfs#RCLGHW=kbBpqrZVOc';
+const SOLID='Twfs#RCLGHW=kbBpqrZVOcoxijY'; /* v0.20 꾸밈: o 가로등 · x 벤치 · i 덤불 · j 연잎 · Y 깃발 벽 · a 양탄자(걷는다) */
 class G{
   constructor(w,h,fill){ this.w=w; this.h=h; this.g=Array.from({length:h},()=>Array(w).fill(fill)); this.keep=new Set(); }
   at(x,y){ return (x<0||y<0||x>=this.w||y>=this.h)?'T':this.g[y][x]; }
@@ -21,6 +21,13 @@ class G{
   /* 꾸밈: 잠기지 않은 풀 칸에 흩뿌린다 */
   scatter(rng,c,n,ok){ let tries=0; while(n>0&&tries<5000){ tries++; const x=1+Math.floor(rng()*(this.w-2)), y=1+Math.floor(rng()*(this.h-2)); if(this.keep.has(x+','+y)||this.g[y][x]!==',') continue; if(ok&&!ok(x,y)) continue; this.g[y][x]=c; n--; } }
   blob(rng,x,y,r,c,only){ for(let j=-r;j<=r;j++) for(let i=-r;i<=r;i++){ if(i*i+j*j>r*r+rng()*r) continue; const X=x+i,Y=y+j; if(this.keep.has(X+','+Y)) continue; if(only&&!only.includes(this.at(X,Y))) continue; this.put(X,Y,c); } }
+  /* 꾸밈(v0.20): 그 자리가 from 글자일 때만 놓는다(길·건물·사람 자리는 건드리지 않는다) */
+  dec(x,y,c,from=','){ if(this.at(x,y)===from&&!this.keep.has(x+','+y)) this.put(x,y,c); }
+  decs(c,pts,from){ for(const [x,y] of pts) this.dec(x,y,c,from); }
+  /* 연잎: 사방이 물인 물 칸에만 */
+  lilies(rng,n){ let tries=0; while(n>0&&tries<3000){ tries++; const x=1+Math.floor(rng()*(this.w-2)), y=1+Math.floor(rng()*(this.h-2)); if(this.g[y][x]!=='w'||this.keep.has(x+','+y)) continue; if([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>!'wj'.includes(this.at(x+dx,y+dy)))) continue; this.g[y][x]='j'; n--; } }
+  /* 양탄자: 문에서 관장까지 세로 두 칸 폭, 바닥 칸만 바꾼다 */
+  carpet(x,y1,y2,w=2){ for(let y=y1;y<=y2;y++) for(let k=0;k<w;k++) this.dec(x+k,y,'a','_'); }
   lines(){ return this.g.map(r=>r.join('')); }
 }
 const warp=(x,y,map,tx,ty,dir,tag)=>Object.assign({x,y,to:{map,x:tx,y:ty,dir}},tag?{tag}:{});
@@ -40,7 +47,7 @@ const P=(id,map,x,y,dir,spr,text,extra)=>NPCS.push(Object.assign({id,map,x,y,dir
   g.blob(r,18,15,3,'#',[',']); g.blob(r,33,14,3,'#',[',']); g.blob(r,47,3,2,'#',[',']); g.blob(r,8,15,2,'#',[',']);
   /* 긴 풀 */
   g.blob(r,16,7,3,'t',[',']); g.blob(r,30,8,4,'t',[',']); g.blob(r,44,9,3,'t',[',']); g.blob(r,55,16,3,'t',[',']); g.blob(r,26,16,3,'t',[',']); g.blob(r,50,6,2,'t',[',']);
-  g.scatter(r,'T',40); g.scatter(r,'F',12); g.scatter(r,'#',10);
+  g.scatter(r,'T',40); g.scatter(r,'F',12); g.scatter(r,'#',10); g.scatter(r,'i',10);
   MAPS.route2={name:'뚱띠 고개',kind:'out',grid:g.lines(),
     warps:[warp(0,9,'town2',22,7,'left'),warp(0,10,'town2',22,8,'left'),warp(63,8,'town3',1,8,'right'),warp(63,9,'town3',1,9,'right')],
     signs:[{x:5,y:7,text:['뚱띠 고개\n← 동현시   뿡뿡항 →\n"고개는 길을 반으로 나눈다."']},{x:57,y:7,text:['뚱띠 고개 동쪽\n바닷바람이 분다. → 뿡뿡항']}],
@@ -66,6 +73,7 @@ const P=(id,map,x,y,dir,spr,text,extra)=>NPCS.push(Object.assign({id,map,x,y,dir
   g.building(4,10,4,1,'R','H',5);    /* house3b (문 5,11) */
   g.put(7,9,'.',true); g.put(5,12,'.',true); g.put(20,4,'.',true); g.put(25,8,'.',true);
   g.scatter(r,'F',10,(x,y)=>y<14); g.scatter(r,'T',6,(x,y)=>y<13&&x>22); g.put(2,8,'.',true);
+  g.decs('o',[[13,6],[16,6],[13,11],[16,11],[23,11],[8,11]]); g.decs('x',[[18,10],[19,10],[9,13]]); g.decs('i',[[2,3],[2,4],[9,3],[9,4],[17,2],[17,3],[23,2],[23,3],[28,6],[28,7],[3,10],[8,10]]); g.scatter(r,'i',4,(x,y)=>y<13);
   MAPS.town3={name:'뿡뿡항',kind:'out',grid:g.lines(),
     warps:[warp(0,8,'route2',62,8,'left'),warp(0,9,'route2',62,9,'left'),warp(14,0,'route3',14,46,'up'),warp(15,0,'route3',15,46,'up'),
       warp(6,5,'gym2',6,16,'up'),warp(20,3,'center',5,6,'up','center3'),warp(25,7,'house3a',4,6,'up'),warp(5,11,'house3b',4,6,'up')],
@@ -84,6 +92,7 @@ const P=(id,map,x,y,dir,spr,text,extra)=>NPCS.push(Object.assign({id,map,x,y,dir
 {
   const g=new G(14,18,'_'); g.border('='); g.rect(1,0,12,1,'=',true);
   g.put(6,16,'m',true); g.put(7,16,'m',true); g.put(3,4,'p',true); g.put(10,4,'p',true); g.rect(2,11,1,1,'p',true); g.rect(11,11,1,1,'p',true);
+  g.carpet(6,3,15); g.dec(3,0,'Y','='); g.dec(10,0,'Y','=');
   MAPS.gym2={name:'뿡뿡항 체육관',kind:'in',grid:g.lines(),warps:[warp(6,16,'town3',6,6,'down'),warp(7,16,'town3',6,6,'down')],signs:[],spawn:{x:6,y:15,dir:'down'}};
   P('guide2','gym2',2,15,'right','boy',['여기는 뿡뿡항 체육관.\n관장 뿡뿡은 초파리·꼬리콥터·전투기·폭격기를 쓴다.\n비행에는 강철이 2배!','수련생 뿡뿡뿡은 글자 하나 차이로\n관장과 이름이 다르다. 셋 다 하늘을 난다.']);
   T('g3','gym2',4,12,'right','guard','수련생 날개',[['fly',12],['copter',12]],480,['수련생 날개: 하늘의 맛을 보여 주지!'],['수련생 날개: 날개가 꺾였다…']);
@@ -101,7 +110,7 @@ const P=(id,map,x,y,dir,spr,text,extra)=>NPCS.push(Object.assign({id,map,x,y,dir
   for(let y=1;y<47;y++) for(let x=1;x<23;x++){ if(g.keep.has(x+','+y)) continue; const nearRoad=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]].some(([dx,dy])=>g.at(x+dx,y+dy)==='.'); if(!nearRoad&&r()<.72) g.put(x,y,'T'); }
   g.blob(r,9,38,2,'t',[',']); g.blob(r,4,30,2,'t',[',']); g.blob(r,18,24,3,'t',[',']); g.blob(r,8,22,2,'t',[',']); g.blob(r,19,15,2,'t',[',']); g.blob(r,7,9,2,'t',[',']); g.blob(r,14,3,2,'t',[',']);
   g.rect(3,36,3,1,'t'); g.rect(10,30,3,2,'t'); g.rect(18,9,3,3,'t');
-  g.scatter(r,'F',8);
+  g.scatter(r,'F',8); g.scatter(r,'i',12);
   MAPS.route3={name:'또치 숲',kind:'out',grid:g.lines(),
     warps:[warp(14,47,'town3',14,1,'down'),warp(15,47,'town3',15,1,'down'),warp(11,0,'town4',11,20,'up'),warp(12,0,'town4',12,20,'up')],
     signs:[{x:13,y:44,text:['또치 숲\n"나머지는 숲에 남는다."\n↑ 꽥꽥마을   ↓ 뿡뿡항']},{x:10,y:4,text:['또치 숲 북쪽\n↑ 꽥꽥마을. 벌레 동현몬이 많다.']}],
@@ -125,6 +134,7 @@ const P=(id,map,x,y,dir,spr,text,extra)=>NPCS.push(Object.assign({id,map,x,y,dir
   g.vroad(6,7,9,1); g.vroad(24,7,9,1); g.vroad(4,15,16,1); g.hroad(16,4,11,1); g.vroad(23,16,17,1); g.hroad(17,11,23,1);
   g.rect(14,14,4,3,'w',true); g.rect(13,13,6,1,'F'); g.rect(13,17,6,1,'F'); g.put(13,14,'F'); g.put(13,15,'F'); g.put(13,16,'F'); g.put(18,14,'F'); g.put(18,15,'F'); g.put(18,16,'F');
   g.scatter(r,'F',8); g.scatter(r,'T',8,(x,y)=>y<3||y>18||x>26);
+  g.decs('o',[[10,8],[13,8],[9,12],[14,12],[21,8],[9,19]]); g.decs('x',[[19,14],[19,15],[26,13]]); g.decs('i',[[3,4],[3,5],[10,4],[10,5],[21,5],[21,6],[27,5],[27,6],[2,13],[2,14],[26,14],[26,15]]); g.decs('j',[[15,15],[16,14]],'w'); g.scatter(r,'i',4,(x,y)=>y<9||y>17);
   MAPS.town4={name:'꽥꽥마을',kind:'out',grid:g.lines(),
     warps:[warp(11,21,'route3',11,1,'down'),warp(12,21,'route3',12,1,'down'),warp(29,10,'route4',1,10,'right'),warp(29,11,'route4',1,11,'right'),
       warp(0,10,'route5',38,14,'left'),warp(0,11,'route5',38,15,'left'),
@@ -145,6 +155,7 @@ const P=(id,map,x,y,dir,spr,text,extra)=>NPCS.push(Object.assign({id,map,x,y,dir
 {
   const g=new G(14,18,'_'); g.border('=');
   g.put(6,16,'m',true); g.put(7,16,'m',true); g.rect(5,6,4,1,'k',true); g.put(2,3,'p',true); g.put(11,3,'p',true); g.put(2,13,'p',true); g.put(11,13,'p',true);
+  g.carpet(6,7,15); g.dec(3,0,'Y','='); g.dec(10,0,'Y','=');
   MAPS.gym3={name:'꽥꽥마을 체육관',kind:'in',grid:g.lines(),warps:[warp(6,16,'town4',6,7,'down'),warp(7,16,'town4',6,7,'down')],signs:[],spawn:{x:6,y:15,dir:'down'}};
   P('guide3','gym3',11,15,'left','boy',['여기는 꽥꽥마을 체육관.\n관장 꽥꽥은 슈슈·창병·보병을 쓴다.\n격투에는 비행이 2배, 벌레에도 비행이 2배!','수련생들은 물음표처럼 생긴 길로\n관장님 앞에 선다. 탁자를 돌아가라.']);
   T('g5','gym3',3,11,'right','guard','수련생 물음',[['pike',17],['shushu',17]],640,['수련생 물음: 묻겠다. 지나갈 자신 있냐?'],['수련생 물음: 답은 "있다"였군.']);
@@ -163,7 +174,7 @@ const P=(id,map,x,y,dir,spr,text,extra)=>NPCS.push(Object.assign({id,map,x,y,dir
   g.rect(1,2,54,1,'r',true); g.put(0,2,'T',true);
   g.blob(r,8,16,3,'t',[',']); g.blob(r,15,5,3,'t',[',']); g.blob(r,28,10,4,'t',[',']); g.blob(r,30,20,3,'t',[',']); g.blob(r,40,6,3,'t',[',']); g.blob(r,50,18,3,'t',[',']); g.blob(r,22,20,2,'t',[',']);
   g.blob(r,36,5,2,'#',[',']); g.blob(r,12,20,2,'#',[',']); g.blob(r,52,14,2,'#',[',']);
-  g.scatter(r,'T',40,(x,y)=>y>3); g.scatter(r,'#',12,(x,y)=>y>3); g.scatter(r,'F',6,(x,y)=>y>3);
+  g.scatter(r,'T',40,(x,y)=>y>3); g.scatter(r,'#',12,(x,y)=>y>3); g.scatter(r,'F',6,(x,y)=>y>3); g.scatter(r,'i',12,(x,y)=>y>3); g.decs('o',[[45,12],[53,12]]);
   MAPS.route4={name:'멈춤 길',kind:'out',grid:g.lines(),
     warps:[warp(0,10,'town4',28,10,'left'),warp(0,11,'town4',28,11,'left'),warp(49,8,'station1',15,15,'up')],
     signs:[{x:4,y:9,text:['멈춤 길\n멈춤단 구역. "오겡끼데스까!"\n→ 신중동역']},{x:46,y:10,text:['신중동역\n멈춤단 본부. 역장: 오겡끼\n열차는 멈춰 있다.']}],
@@ -188,7 +199,7 @@ const P=(id,map,x,y,dir,spr,text,extra)=>NPCS.push(Object.assign({id,map,x,y,dir
   for(let y=1;y<39;y++) for(let x=1;x<39;x++){ if(g.g[y][x]==='w'){ for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const X=x+dx,Y=y+dy; if(g.at(X,Y)===','&&!g.keep.has(X+','+Y)) g.put(X,Y,'n'); } } }
   g.rect(19,17,2,3,'P',true); g.rect(19,16,2,1,'P',true); g.put(18,19,'P',true); g.put(21,19,'P',true); g.hroad(20,18,19,1); g.vroad(19,20,21,1); g.put(19,16,'P',true);
   g.blob(r,6,5,3,'t',[',']); g.blob(r,33,6,3,'t',[',']); g.blob(r,8,25,3,'t',[',']); g.blob(r,33,24,3,'t',[',']); g.blob(r,30,19,2,'t',[',']); g.blob(r,4,19,2,'t',[',']);
-  g.scatter(r,'T',52); g.scatter(r,'F',16); g.scatter(r,'#',10);
+  g.scatter(r,'T',52); g.scatter(r,'F',16); g.scatter(r,'#',10); g.scatter(r,'i',14); g.lilies(r,10); g.decs('x',[[21,21],[23,21]]);
   /* 서쪽 출구 주머니 */
   g.rect(1,13,2,1,'#',true); g.rect(1,16,2,1,'#',true);
   MAPS.route5={name:'호숫길',kind:'out',grid:g.lines(),
@@ -211,6 +222,7 @@ const P=(id,map,x,y,dir,spr,text,extra)=>NPCS.push(Object.assign({id,map,x,y,dir
   for(const x of [5,12,19,26]) for(const y of [4,11]) g.put(x,y,'O',true);
   g.rect(7,7,4,1,'c',true); g.rect(13,7,6,1,'c',true); g.rect(21,7,4,1,'c',true); g.rect(2,2,5,1,'k',true); g.put(29,2,'S',true); g.rect(27,1,1,3,'p',true); g.rect(29,5,2,1,'p',true);
   g.put(2,14,'p',true); g.put(29,14,'p',true); g.put(2,9,'b',true); g.put(29,9,'b',true);
+  g.carpet(15,8,15);
   MAPS.station1={name:'신중동역 대합실',kind:'in',grid:g.lines(),
     warps:[warp(15,16,'route4',49,9,'down'),warp(16,16,'route4',49,9,'down'),warp(29,2,'station2',2,2,'right')],
     signs:[{x:16,y:2,text:['신중동역 안내판\n"모든 열차는 멈춰 있습니다. 오겡끼데스까!"\n승강장 ↗ 계단']}],
@@ -276,7 +288,7 @@ for(const n of NPCS){ const m=MAPS[n.map]; const row=m.grid[n.y].split(''); if('
 const errs=check();
 if(errs.length){ console.error(errs.join('\n')); process.exit(1); }
 let tiles=0; for(const m of Object.values(MAPS)) tiles+=m.grid.length*m.grid[0].length;
-const out=`/* 동현몬 확장 세계(v0.18). tools/worldgen.cjs 가 만든다. 손으로 고치지 말 것.\n   지도 ${Object.keys(MAPS).length}장 · ${tiles}칸 · 사람 ${NPCS.length}명 */\n(function(root){\n'use strict';\nroot.WORLD={MAPS:${JSON.stringify(MAPS)},\nNPCS:${JSON.stringify(NPCS)}};\n})(window);\n`;
+const out=`/* 동현몬 확장 세계(v0.18 · v0.20 꾸밈). tools/worldgen.cjs 가 만든다. 손으로 고치지 말 것.\n   지도 ${Object.keys(MAPS).length}장 · ${tiles}칸 · 사람 ${NPCS.length}명 */\n(function(root){\n'use strict';\nroot.WORLD={MAPS:${JSON.stringify(MAPS)},\nNPCS:${JSON.stringify(NPCS)}};\n})(window);\n`;
 fs.writeFileSync(path.join(__dirname,'..','src','world.js'),out);
 console.log(`world.js: 지도 ${Object.keys(MAPS).length}장, ${tiles}칸, 사람 ${NPCS.length}명`);
 for(const [k,m] of Object.entries(MAPS)) console.log(k, m.grid[0].length+'x'+m.grid.length);
