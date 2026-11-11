@@ -3,14 +3,29 @@
 'use strict';
 const D=root.DATA, {T,MAPS,ITEMS,MOVES,TYPES}=D, SP=root.Sprites, E=root.Engine;
 const W=320,H=192, FONT="11px Pretendard,'Apple SD Gothic Neo','Noto Sans KR',sans-serif", FONTB="bold 11px Pretendard,'Apple SD Gothic Neo','Noto Sans KR',sans-serif";
-function spr(g,key,x,y,flip){ const c=SP.make(key,flip); g.drawImage(c,Math.round(x),Math.round(y)); }
+/* 지형만 별도 재료색으로 그린다. 사람·포동이·동현몬의 원본 팔레트와 도트는 보존한다. */
+const TERRAIN={...SP.PAL,K:'#465751',E:'#eef0df',W:'#eee4cd',G:'#b6a082',
+  '1':'#a0b996','2':'#88a782','3':'#d7c6a2','4':'#c1b18e','5':'#526f61','6':'#6e9275',
+  '7':'#6e9fa9','8':'#b6d2cb','9':'#a5a89a',M:'#b57864',d:'#805851',B:'#698b9c',b:'#425f72',
+  I:'#879c9b',i:'#c4cfc3',O:'#b29a70',o:'#817254',n:'#e4dfcd',h:'#655d4e',c:'#8c8876',
+  Q:'#cbb68b',U:'#8ea9b4',u:'#e0dac6',v:'#ccc5ae',x:'#ad8272',z:'#cfa891',
+  t:'#766b54',T:'#a99a76',a:'#959d90',A:'#5d6e67',g:'#72947a'};
+const terrainCache={};
+function terrain(key,flip){
+  const ck=key+(flip?'f':'');if(terrainCache[ck])return terrainCache[ck];
+  const rows=SP.SPR[key].replace(/^\n/,'').split('\n'),c=document.createElement('canvas');
+  c.width=Math.max(...rows.map(r=>r.length));c.height=rows.length;const ctx=c.getContext('2d');
+  rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(TERRAIN[ch]){ctx.fillStyle=TERRAIN[ch];ctx.fillRect(flip?c.width-x-1:x,y,1,1);}}));
+  return terrainCache[ck]=c;
+}
+function spr(g,key,x,y,flip){ const c=key.startsWith('t_')?terrain(key,flip):SP.make(key,flip); g.drawImage(c,Math.round(x),Math.round(y)); }
 function sprScaled(g,key,x,y,s,flip){ const c=SP.make(key,flip); g.drawImage(c,Math.round(x),Math.round(y),c.width*s,c.height*s); }
 function entKey(base,e,hasWalk){ const d=e.dir==='right'?'left':e.dir; const f=(e.moving>0&&hasWalk&&(Math.floor(e.anim/4)%2===1))?'2':''; let k=base+'_'+d+f; if(!SP.has(k)) k=base+'_'+d; if(!SP.has(k)) k=base+'_down'; return k; }
-function box(g,x,y,w,h){ g.fillStyle='#f8f4ea'; g.fillRect(x,y,w,h); g.fillStyle='#2e2a38'; g.fillRect(x,y,w,2); g.fillRect(x,y+h-2,w,2); g.fillRect(x,y,2,h); g.fillRect(x+w-2,y,2,h); g.fillStyle='#8a8070'; g.fillRect(x+2,y+2,w-4,1); g.fillRect(x+2,y+2,1,h-4); }
+function box(g,x,y,w,h){ g.fillStyle='#f5f0e2'; g.fillRect(x,y,w,h); g.fillStyle='#526861'; g.fillRect(x,y,w,1); g.fillRect(x,y+h-1,w,1); g.fillRect(x,y,1,h); g.fillRect(x+w-1,y,1,h); g.fillStyle='#fffaf0'; g.fillRect(x+1,y+1,w-2,1);g.fillStyle='#d0cebb';g.fillRect(x+1,y+h-2,w-2,1);g.fillStyle='#a89161';g.fillRect(x+2,y+2,7,1); }
 function text(g,s,x,y,col,bold){ g.font=bold?FONTB:FONT; g.fillStyle=col||'#2e2a38'; g.textBaseline='top'; g.fillText(s,x,y); }
 function wrap(g,s,maxW){ g.font=FONT; const out=[]; for(const para of s.split('\n')){ let line=''; for(const ch of para){ if(g.measureText(line+ch).width>maxW&&line){ out.push(line); line=ch; } else line+=ch; } out.push(line); } return out; }
 function bar(g,x,y,w,h,ratio,col){ g.fillStyle='#2e2a38'; g.fillRect(x-1,y-1,w+2,h+2); g.fillStyle='#d8d2c4'; g.fillRect(x,y,w,h); g.fillStyle=col; g.fillRect(x,y,Math.round(w*Math.max(0,Math.min(1,ratio))),h); }
-const hpCol=r=>r>0.5?'#58b84a':r>0.2?'#e8b020':'#d6403a';
+const hpCol=r=>r>0.5?'#548c72':r>0.2?'#bd944b':'#c26558';
 
 /* ---------- 지도 ---------- */
 function camera(S){ const m=MAPS[S.map], mw=m.grid[0].length*T, mh=m.grid.length*T, h=S.hero; let cx,cy;
@@ -19,13 +34,25 @@ function camera(S){ const m=MAPS[S.map], mw=m.grid[0].length*T, mh=m.grid.length
   S.cam.x=cx; S.cam.y=cy; return [cx,cy]; }
 /* 건물 입체감(동현워 건물을 따른다): 지붕·벽의 바깥 모서리에 테두리, 벽 오른쪽에 그늘 기둥, 건물 아래 땅에 그림자. 이웃 칸을 보고 그리므로 지도 글자는 그대로다. */
 const ROOF='RCLGZ', WALL='HWDV';
+const ROOF_MAT={
+  R:['#b19a73','#c5b38f','#988467'],C:['#b77f6b','#cfa18a','#9c6f61'],
+  L:['#9cacaa','#c1ccc1','#7c9696'],G:['#688c9c','#92aebb','#547687'],
+  Z:['#829a96','#a8bbb0','#637e7c']
+};
 function at(m,x,y){ const r=m.grid[y]; return r?(r[x]||' '):' '; }
 function building(g,m,tx,ty,ch,px,py){
-  const INK='#2e2a38';
+  const INK='#465751';
   if(ROOF.includes(ch)){
+    // 큰 지붕 면은 잔무늬 대신 낮은 대비의 기와 단과 어긋난 줄눈으로 잇는다.
+    const [base,hi,shade]=ROOF_MAT[ch];
+    g.fillStyle=base;g.fillRect(px,py,T,T);
+    for(let y=3;y<T;y+=5){g.fillStyle=shade;g.fillRect(px,py+y,T,1);g.fillStyle=hi;g.fillRect(px,py+y+1,T,1);g.fillStyle=shade;g.fillRect(px+((ty+y)%2?4:10),py+y-2,1,2);}
+    if(!ROOF.includes(at(m,tx,ty-1))){g.fillStyle=INK;g.fillRect(px,py,T,1);g.fillStyle=hi;g.fillRect(px,py+1,T,1);}
+    if(!ROOF.includes(at(m,tx,ty+1))){g.fillStyle=shade;g.fillRect(px,py+T-2,T,1);g.fillStyle=INK;g.fillRect(px,py+T-1,T,1);}
     g.fillStyle=INK; if(!ROOF.includes(at(m,tx-1,ty))) g.fillRect(px,py,1,T); if(!ROOF.includes(at(m,tx+1,ty))) g.fillRect(px+T-1,py,1,T);
     if(!ROOF.includes(at(m,tx+1,ty))){ g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(px+T-3,py+2,2,T-4); }
   } else if(WALL.includes(ch)){
+    if(ROOF.includes(at(m,tx,ty-1))){g.fillStyle='rgba(55,75,69,.18)';g.fillRect(px,py,T,2);}
     const rightOpen=!WALL.includes(at(m,tx+1,ty)), leftOpen=!WALL.includes(at(m,tx-1,ty));
     if(rightOpen){ g.fillStyle='rgba(0,0,0,.14)'; g.fillRect(px+T-3,py+1,2,T-2); }
     g.fillStyle=INK; if(leftOpen) g.fillRect(px,py,1,T); if(rightOpen) g.fillRect(px+T-1,py,1,T);
@@ -49,14 +76,14 @@ function tileKey(ch,tx,ty,frame){
 function trim(g,m,tx,ty,ch,px,py){
   if(GROUND.includes(ch)){
     const grass=ch2=>GRASSY.includes(ch2), L=grass(at(m,tx-1,ty)), R=grass(at(m,tx+1,ty)), U=grass(at(m,tx,ty-1)), D=grass(at(m,tx,ty+1));
-    const edge=ch==='.'?'#c9ab6d':'#d9c79a', green='#8fd16a';
+    const edge=ch==='.'?'#c1b18e':'#d0c4a6', green=TERRAIN['1'];
     g.fillStyle=edge; if(L) g.fillRect(px,py,1,T); if(R) g.fillRect(px+T-1,py,1,T); if(U) g.fillRect(px,py,T,1); if(D) g.fillRect(px,py+T-1,T,1);
     g.fillStyle=green; if(L&&U){ g.fillRect(px,py,2,1); g.fillRect(px,py,1,2); } if(R&&U){ g.fillRect(px+T-2,py,2,1); g.fillRect(px+T-1,py,1,2); } if(L&&D){ g.fillRect(px,py+T-1,2,1); g.fillRect(px,py+T-2,1,2); } if(R&&D){ g.fillRect(px+T-2,py+T-1,2,1); g.fillRect(px+T-1,py+T-2,1,2); }
     g.fillStyle=edge; if(L&&U) g.fillRect(px+1,py+1,1,1); if(R&&U) g.fillRect(px+T-2,py+1,1,1); if(L&&D) g.fillRect(px+1,py+T-2,1,1); if(R&&D) g.fillRect(px+T-2,py+T-2,1,1);
   } else if(WATER.includes(ch)){
     const land=ch2=>!WATER.includes(ch2)&&ch2!==' ', L=land(at(m,tx-1,ty)), R=land(at(m,tx+1,ty)), U=land(at(m,tx,ty-1)), D=land(at(m,tx,ty+1));
-    g.fillStyle='#b5dcf2'; if(L) g.fillRect(px,py,1,T); if(R) g.fillRect(px+T-1,py,1,T); if(U) g.fillRect(px,py,T,1); if(D) g.fillRect(px,py+T-1,T,1);
-    g.fillStyle='#e6f3fb'; if(U){ const o=(tx*5+(S_FRAME>>4))%6; g.fillRect(px+o,py+1,2,1); } if(L){ const o=(ty*5+(S_FRAME>>4))%6; g.fillRect(px+1,py+o,1,2); }
+    g.fillStyle=TERRAIN['8']; if(L) g.fillRect(px,py,1,T); if(R) g.fillRect(px+T-1,py,1,T); if(U) g.fillRect(px,py,T,1); if(D) g.fillRect(px,py+T-1,T,1);
+    g.fillStyle='#dce9db'; if(U){ const o=(tx*5+(S_FRAME>>4))%6; g.fillRect(px+o,py+1,2,1); } if(L){ const o=(ty*5+(S_FRAME>>4))%6; g.fillRect(px+1,py+o,1,2); }
   }
 }
 let S_FRAME=0;
@@ -83,8 +110,15 @@ function drawDialog(g,S){ const d=S.dialog; if(!d||d.wait) return;
 }
 /* ---------- 전투 ---------- */
 function drawBattle(g,S){ const B=S.battle, me=S.party[B.me], f=B.foes[B.fi], fr=S.frame;
-  g.fillStyle='#eef3e6'; g.fillRect(0,0,W,H);
-  g.fillStyle='#d8e6c4'; g.beginPath(); g.ellipse(278,48,28,6,0,0,Math.PI*2); g.fill(); g.beginPath(); g.ellipse(76,136,70,14,0,0,Math.PI*2); g.fill();
+  // 먼 능선과 가까운 발판. 캐릭터 크기·위치·전투 원근은 그대로 둔다.
+  const bg=g.createLinearGradient(0,0,0,142);bg.addColorStop(0,'#b6c9c3');bg.addColorStop(.48,'#e4e5cf');bg.addColorStop(1,'#d2d7ba');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  g.fillStyle='#b2c3aa';g.beginPath();g.moveTo(0,66);g.quadraticCurveTo(75,45,156,70);g.quadraticCurveTo(234,48,320,64);g.lineTo(320,83);g.lineTo(0,83);g.fill();
+  g.fillStyle='#c1cba9';g.fillRect(0,81,W,1);
+  for(const [x,y,rx,ry] of [[278,48,28,6],[76,136,70,14]]){
+    g.fillStyle='#a8b998';g.beginPath();g.ellipse(x,y+2,rx,ry,0,0,Math.PI*2);g.fill();
+    g.fillStyle='#dce0be';g.beginPath();g.ellipse(x,y,rx-2,ry-2,0,0,Math.PI*2);g.fill();
+    g.fillStyle='#bdc9a5';g.fillRect(x-rx*.45,y+1,rx*.32,1);
+  }
   const sx=B.shake>0?Math.round(Math.sin(fr*1.7)*3):0;
   // 상대
   const vis=(m,fl)=>(m.hp>0||(B.cur&&B.cur.t==='hp'))&&!(fl>0&&(fr>>1)%2===0);
