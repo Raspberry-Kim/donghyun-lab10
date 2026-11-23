@@ -1,4 +1,4 @@
-# 동현몬 v0.26
+# 동현몬 v0.27
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23914029.svg)](https://doi.org/10.5281/zenodo.23914029)
 
